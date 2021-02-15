@@ -2,11 +2,11 @@
   ******************************************************************************
   * @file    handlers.c
   * @author  Zaznov NIIKP
-  * @version V1.0.2
-  * @date    25/02/2020
+  * @version V2.0.0
+  * @date    05/12/2020
   * @brief   This file provides firmware functions to work with following handlers:           
-  *           + 
   *           + UART0_Handler
+  *           + PORTB_Handler
   *           + ...
   ******************************************************************************
   * FILE handlers.c
@@ -26,9 +26,8 @@ void INT_UART0_Handler(void)
     char Gotten_byte = 0;
     if(UART_GetITStatusMasked(MDR_UART0, UART_IT_RX) == SET)                    //Если активен бит прерывания по приему
     {  
-        
         Gotten_byte = UART_ReceiveData(MDR_UART0);   
-        if(IsCorrect_Byte(Gotten_byte))                                         // Если пришедший байт корректен  
+        if(is_correct_byte(Gotten_byte))                                         // Если пришедший байт корректен  
         {
             Gotten_command[command_counter] = Gotten_byte;
             command_counter++;
@@ -41,7 +40,7 @@ void INT_UART0_Handler(void)
         }
         else                                                                    // Если байт не корректен
         {
-            UART_Send_Confirmation_command('E');                                // Возвращаем сообщение об ошибке. 
+            uart_send_confirmation_command('E');                                // Возвращаем сообщение об ошибке. 
             command_counter = 0;
         }
         UART_ClearITPendingBit(MDR_UART0, UART_IT_RX);                          // Очищаем бит приема прерыв.
@@ -54,7 +53,6 @@ void IRQ_PORTB_Handler()
     NVIC_DisableIRQ(PORTB_IRQn);   
     ADC_Ready = 1;
 }
-
 
 
 /************************* 2020 Zaznov NIIKP ***********************************

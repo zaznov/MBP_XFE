@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    Spi.h
   * @author  Zaznov NIIKP
-  * @version V1.0.3
-  * @date    21/06/2020
+  * @version V2.0.0
+  * @date    05/12/2020
   * @brief   This file contains all the functions prototypes for work with SPI 
              from XFE project
   ******************************************************************************
@@ -18,15 +18,18 @@
 #include "mdr32f8_ssp.h"
 #include "mdr32f8_port.h"               // Keil::Drivers:PORT
 #include "mdr32f8_clkctrl.h"            // Keil::Drivers:CLKCTRL
-#include "spec.h"                       // Keil.EVAL-BOARD1986VE8TSupport::Board Support:Board Setup
+#include "spec.h"                       // 
 
 /* Defines -------------------------------------------------------------------*/ 
-
+#define CS_MKDS_1_DOWN()  PORT_ResetBits(PORTB, PORT_Pin_25)
+#define CS_MKDS_1_UP()    PORT_SetBits(PORTB, PORT_Pin_25)
 /* Variables -----------------------------------------------------------------*/
 
 /* Functions -----------------------------------------------------------------*/
-void Pin_init_spi(void);
+void pin_init_spi(void);
 void spi_init(void);
+void spi_init_MKAS(void);
+void spi_init_MKDS(void);
 
 #endif /* __XFE_SPI_H */
 

@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    MKDS.c
   * @author  Zaznov NIIKP
-  * @version V1.0.0
-  * @date    03/07/2020
+  * @version V2.0.0
+  * @date    05/12/2020
   * @brief   This file provides firmware functions to manage the following 
   *          functionalities of the MKDS-driver:           
   *           + ...
@@ -18,77 +18,81 @@
 /* Defines -------------------------------------------------------------------*/ 
 
 /* Variables -----------------------------------------------------------------*/
-uint16_t PLIS_status  = 0xBB;
+ 
 
 /* Functions -----------------------------------------------------------------*/
-void Data_Response_from_MKDS(void)                                                            // Функиция работы с ТЗЧ - платой МКДС
+void reboot_MKDS(void)
 {
-    uint16_t byte1 = 0;
-    uint16_t byte2 = 0;
-    uint16_t byte3 = 0;
-    uint16_t byte4 = 0;
-    uint16_t byte_false = 0;
+    uart_send_confirmation_command('R');
+
+    SSP_SendData_MKDS1(MDR_SSP0, 0x80);
+    SSP_SendData_MKDS1(MDR_SSP0, 0x00);
+    SSP_SendData_MKDS1(MDR_SSP0, 0x00);
+    SSP_SendData_MKDS1(MDR_SSP0, 0x00);
+    
+}
+void start_MKDS(void)
+{
+    uart_send_confirmation_command('M');
+
+    SSP_SendData_MKDS1(MDR_SSP0, 0x20);
+    SSP_SendData_MKDS1(MDR_SSP0, 0x00);
+    SSP_SendData_MKDS1(MDR_SSP0, 0x00);
+    SSP_SendData_MKDS1(MDR_SSP0, 0x00);
+    
+}
+void mesuring_MKDS(void)
+{
+    uart_send_confirmation_command('T');
+    
+    SSP_SendData_MKDS1(MDR_SSP0, 0x60);
+    SSP_SendData_MKDS1(MDR_SSP0, 0x00);
+    SSP_SendData_MKDS1(MDR_SSP0, 0x40);
+    SSP_SendData_MKDS1(MDR_SSP0, 0x00);
+    
+}
+void read_results_MKDS(void)
+{
+    uart_send_confirmation_command('O');
+    
+    uint16_t PLIS_result_1b  = 0x00;   
+    uint16_t PLIS_result_2b  = 0x00; 
+    PLIS_result_1b = SSP_ReceiveData_MKDS_1(MDR_SSP0);
+    PLIS_result_2b = SSP_ReceiveData_MKDS_1(MDR_SSP0);
+    uart_send_data(PLIS_result_1b);                                      
+    uart_send_data(PLIS_result_2b);                                      
+    uart_send_data(0x0A);
+}
+
+
+
+void SSP_SendData_MKDS1(MDR_SSP_TypeDef* SSPx, uint16_t Data)
+{
+    my_assert_param(IS_SSP_ALL_PERIPH(SSPx));
     
     while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_TFE) == RESET);
-    SSP_SendData(MDR_SSP0, 0x06); 
+    CS_MKDS_1_DOWN();
+    SSP_SendData(SSPx, Data);
     while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_RNE) == RESET);
-    byte_false = SSP_ReceiveData(MDR_SSP0);
-    while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_TFE) == RESET);
-    SSP_SendData(MDR_SSP0, 0x33);
-    while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_RNE) == RESET);
-    byte1 = SSP_ReceiveData(MDR_SSP0);
-    while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_TFE) == RESET);
-    SSP_SendData(MDR_SSP0, 0x33);
-    while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_RNE) == RESET);
-    byte2 = SSP_ReceiveData(MDR_SSP0);
-    while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_TFE) == RESET);
-    SSP_SendData(MDR_SSP0, 0x33);
-    while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_RNE) == RESET);
-    byte3 = SSP_ReceiveData(MDR_SSP0);
-    while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_TFE) == RESET);
-    SSP_SendData(MDR_SSP0, 0x33);
-    while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_RNE) == RESET);
-    byte4 = SSP_ReceiveData(MDR_SSP0);  
-    //Delay1(100);
-    UART_SendData_fixed(byte1);                                      //Отправляем обратно byte1 
-    //Delay1(100);
-    UART_SendData_fixed(byte2);                                      //Отправляем обратно byte2 
-    //Delay1(100);
-    UART_SendData_fixed(byte3);                                      //Отправляем обратно byte3 
-    //Delay1(100);
-    UART_SendData_fixed(byte4);                                      //Отправляем обратно byte4        
-    //Delay1(100);
+    SSP_ReceiveData(MDR_SSP0);
+    while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_BSY) == SET);
+    CS_MKDS_1_UP();
 }
 
-
-void Get_TZCH(void)
+uint16_t SSP_ReceiveData_MKDS_1(MDR_SSP_TypeDef* SSPx)
 {
-    UART_Send_Confirmation_command('T');
-    PLIS_status = 0xBB;
-    while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_TFE) == RESET);
-    SSP_SendData(MDR_SSP0, 0x01);
+    my_assert_param(IS_SSP_ALL_PERIPH(SSPx));
     
-    while(PLIS_status  == 0xBB)
-    { 
-        Delay2(50000);                                                          //Ждем результаты 
-        while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_TFE) == RESET);
-        SSP_SendData(MDR_SSP0, 0x07);                                           //Отправляем команду запроса статуса
-        while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_TFE) == RESET);
-        SSP_SendData(MDR_SSP0, 0x33); 
-        while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_RNE) == RESET);
-        PLIS_status = SSP_ReceiveData(MDR_SSP0);                                //Фиктивное считывание для смещая буфера
-        while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_RNE) == RESET);
-        PLIS_status = SSP_ReceiveData(MDR_SSP0);                                //Считываем статус ПЛИС
-        
-        if(PLIS_status == 0xCC) Data_Response_from_MKDS();                      //Если результаты готовы, то считываем их   
-    }
+    uint16_t PLIS_result = 0x00;
+    while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_TFE) == RESET);
+    CS_MKDS_1_DOWN();
+    SSP_SendData(MDR_SSP0, 0x00);
+    while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_RNE) == RESET);
+    PLIS_result = SSP_ReceiveData(MDR_SSP0); 
+    while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_BSY) == SET);
+    CS_MKDS_1_UP();    
+    return (PLIS_result);
 }
-
-void Delay2(__IO uint32_t nCount)
-{
-  for (; nCount != 0; nCount--);
-}
-
 
 /************************* 2020 Zaznov NIIKP ***********************************
 *

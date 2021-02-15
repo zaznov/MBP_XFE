@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    MKAS.h
   * @author  Zaznov NIIKP
-  * @version V1.0.0
-  * @date    14/06/2020
+  * @version V2.0.0
+  * @date    05/12/2020
   * @brief   This file contains all the functions prototypes for work with...
   To view Datasheet visit:
   https:....
@@ -32,21 +32,14 @@
 
 /* Variables -----------------------------------------------------------------*/
 
-
-
-
 /* Functions -----------------------------------------------------------------*/
-void Data_Response_ADC(void);
-int  Invert(uint8_t x);
-void Set_U(void);
-void Set_U_local(void);
-void Get_U(void);
-void Get_I(void);
-void Get_Doza(void);
-static inline void Choose_ADC_Chanel(int Chanel);
-static inline void Choose_DAC(int number);
-static inline void send_data_to_DAC(int i);
-uint8_t Change_into_HEX_(uint8_t data);
+void data_response_ADC(void);
+void set_U(void);
+void set_U_local(void);
+void get_U(void);
+void get_I(void);
+void get_Doza(void);
+uint8_t change_into_HEX(uint8_t data);
 void MKAS_init(void);
 
 

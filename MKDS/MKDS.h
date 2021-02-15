@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    MKDS.h
   * @author  Zaznov NIIKP
-  * @version V1.0.0
-  * @date    03/07/2020
+  * @version V2.0.0
+  * @date    05/12/2020
   * @brief   This file contains all the functions prototypes for work with...
   To view Datasheet visit:
   https:....
@@ -18,6 +18,7 @@
 /* Includes ------------------------------------------------------------------*/ 
 #include "Spi.h"
 #include "Uart.h"
+#include "my_assert.h"
 
 /* Defines -------------------------------------------------------------------*/  
 
@@ -26,9 +27,18 @@
 
 /* Functions -----------------------------------------------------------------*/
 void Data_Response_from_MKDS(void);
-void Get_TZCH(void);
+void get_TZCH(void);
 
-void Delay2(__IO uint32_t nCount);
+
+void reboot_MKDS(void);
+void start_MKDS(void);
+void mesuring_MKDS(void);
+void read_results_MKDS(void);
+
+
+uint16_t SSP_ReceiveData_MKDS_1(MDR_SSP_TypeDef* SSPx);
+void SSP_SendData_MKDS1(MDR_SSP_TypeDef* SSPx, uint16_t Data);
+
     
 #endif /* __MKDS_H_ */
 

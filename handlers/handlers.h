@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    handlers.h
   * @author  Zaznov NIIKP
-  * @version V1.0.2
-  * @date    25/02/2020
+  * @version V2.0.0
+  * @date    05/12/2020
   * @brief   This file contains functions prototypes for work with interrupt
   handlers of stm32f4xx
   ******************************************************************************
@@ -14,14 +14,14 @@
 #ifndef __HANDLERS_H_
 #define __HANDLERS_H_
 /* Includes ------------------------------------------------------------------*/  
-#include "mdr32f8_it.h"                 // Keil.EVAL-BOARD1986VE8TSupport::Board Support:Board Setup
+#include "mdr32f8_it.h"                 // 
 #include "Uart.h"
 #include "state_machine.h"
 
 /* defines -------------------------------------------------------------------*/  
 
 /* Variables -----------------------------------------------------------------*/
-extern _Bool ADC_Ready;                                              
+extern volatile _Bool ADC_Ready;                                              
 
 
 /* Functions -----------------------------------------------------------------*/

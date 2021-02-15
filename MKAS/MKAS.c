@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    MKAS.c
   * @author  Zaznov NIIKP
-  * @version V1.0.0
-  * @date    14/06/2020
+  * @version V2.0.0
+  * @date    05/12/2020
   * @brief   This file provides firmware functions to manage the following 
   *          functionalities of the MKAS-driver:           
   *           + ...
@@ -19,78 +19,77 @@
 
 /* Variables -----------------------------------------------------------------*/
 volatile _Bool ADC_Ready = 0;
-char DAC_data[32];
+static char DAC_data[32] = {0};
+
+
 
 /* Functions -----------------------------------------------------------------*/
-void MKAS_init(void)
-{
-    for(int i = 0; i < 32; i++)
-    {
-        DAC_data[i] = 0;                         
-    }
-}
+static inline void Choose_ADC_Chanel(uint16_t Chanel);
+static inline void Choose_DAC(uint16_t number);
+static inline void send_data_to_DAC(uint16_t i);
+static int  Invert(uint8_t x);
+/* ---------------------------------------------------------------------------*/
 
 void send_one_byte_from_adc(int data)
 { 
     switch(data&0x0F)
         {
             case(0):
-                UART_SendData_fixed(0x30);
+                uart_send_data(0x30);
                 break;
             case(1):
-                UART_SendData_fixed(0x31);
+                uart_send_data(0x31);
                 break;
             case(2):
-                UART_SendData_fixed(0x32);
+                uart_send_data(0x32);
                 break;
             case(3):
-                UART_SendData_fixed(0x33);
+                uart_send_data(0x33);
                 break;
             case(4):
-                UART_SendData_fixed(0x34);
+                uart_send_data(0x34);
                 break;
             case(5):
-                UART_SendData_fixed(0x35);
+                uart_send_data(0x35);
                 break;
             case(6):
-                UART_SendData_fixed(0x36);
+                uart_send_data(0x36);
                 break;
             case(7):
-                UART_SendData_fixed(0x37);
+                uart_send_data(0x37);
                 break;
             case(8):
-                UART_SendData_fixed(0x38);
+                uart_send_data(0x38);
                 break;
             case(9):
-                UART_SendData_fixed(0x39);
+                uart_send_data(0x39);
                 break;
             case(0x0A):
-                UART_SendData_fixed(0x41);
+                uart_send_data(0x41);
                 break;
             case(0x0B):
-                UART_SendData_fixed(0x42);
+                uart_send_data(0x42);
                 break;
             case(0x0C):
-                UART_SendData_fixed(0x43);
+                uart_send_data(0x43);
                 break;
             case(0x0D):
-                UART_SendData_fixed(0x44);
+                uart_send_data(0x44);
                 break;
             case(0x0E):
-                UART_SendData_fixed(0x45);
+                uart_send_data(0x45);
                 break;
             case(0x0F):
-                UART_SendData_fixed(0x46);
+                uart_send_data(0x46);
                 break;          
         } 
 }
 
-void Data_Response_ADC()
+void data_response_ADC()
 {
     uint16_t byte1 = 0;
     uint16_t byte2 = 0;
-    PORT_SetBits(PORTB, Start_ADC);                                             //Подали команду на Start 
-    //Delay1(10);                                                         
+    PORT_SetBits(PORTB, Start_ADC);                                             //Подали команду на Start                                                
     PORT_ResetBits(PORTB, Start_ADC);                                 
     //while(!ADC_Ready); 
     
@@ -109,29 +108,28 @@ void Data_Response_ADC()
     send_one_byte_from_adc(actual >> 8);
     send_one_byte_from_adc(actual >> 4);
     send_one_byte_from_adc(actual);
-    UART_SendData_fixed(0x0A);
+    uart_send_data(0x0A);
     ADC_Ready = 0;
     NVIC_EnableIRQ(PORTB_IRQn);
 }
 
 
-void Set_U_local(void)
+void set_U_local(void)
 {
-    UART_Send_Confirmation_command('S');
+    uart_send_confirmation_command('S');
     for(int i = 0; i < 32; i++)
         {
-            DAC_data[i] = Change_into_HEX_(DAC_data[i]);                        // Меняем значения для передачи в ЦАП из Аски в Хекс
+            DAC_data[i] = change_into_HEX(DAC_data[i]);                        // Меняем значения для передачи в ЦАП из Аски в Хекс
         }
     
     PORT_ResetBits(PORTB, A2);                                                  //Выбрали ЦАП в целом      
     for(int j = 0; j < 32; j = j+8)
         {
-            Choose_DAC(j);    
             send_data_to_DAC(j);        
         }
 }
 
-void Set_U(void)
+void set_U(void)
 {
     UART_ITConfig(MDR_UART0, UART_IT_RX, DISABLE);                              //Выключить прерывание по приему  
     char data;
@@ -141,136 +139,160 @@ void Set_U(void)
         while (UART_GetFlagStatus (MDR_UART0, UART_FLAG_RXFF)!= SET)
             ;
         data = UART_ReceiveData(MDR_UART0);
-        if(Is_HEX_Byte(data))                                                   // Если пришедший байт HEX  
+        if(is_HEX_byte(data))                                                   // Если пришедший байт HEX  
         {
             DAC_data[counter] = data;
             counter ++;   
         }
         else                                                                    // Если байт не HEX
         {
-            UART_Send_Confirmation_command('E');                                //Возвращаем сообщение об ошибке. 
+            uart_send_confirmation_command('E');                                //Возвращаем сообщение об ошибке. 
             break;
         }
     }
     
-    Set_U_local();
+    set_U_local();
     UART_ITConfig(MDR_UART0, UART_IT_RX, ENABLE);                               //Включить прерывание по приему
 }
 
 
-void Get_U(void)
+void get_U(void)
 {
-    UART_Send_Confirmation_command('U');
+    uart_send_confirmation_command('U');
     NVIC_EnableIRQ(PORTB_IRQn);                                                 // Разрешим прерывания на порту В 
     //PORTB->SIE=0x80000;                                                         //Установим разрешение прерывания по 19 выводу порта В - означающий готовность данных на АЦП    
     PORT_SetBits(PORTB, A2);                                                    //Выбрали АЦП в целом      
     PORT_SetBits(PORTB, A0);                                                    //Выбрали АЦП 2 - АЦП напряжений.
     
     Choose_ADC_Chanel(1);                                                       //Выбрали канал 1    
-    Data_Response_ADC();
+    data_response_ADC();
     Choose_ADC_Chanel(2);                                                          
-    Data_Response_ADC();
+    data_response_ADC();
     Choose_ADC_Chanel(3);                                                          
-    Data_Response_ADC();
+    data_response_ADC();
     Choose_ADC_Chanel(4);                                                          
-    Data_Response_ADC();
+    data_response_ADC();
     Choose_ADC_Chanel(5);                                                          
-    Data_Response_ADC();
+    data_response_ADC();
     Choose_ADC_Chanel(6);                                                          
-    Data_Response_ADC();
+    data_response_ADC();
     Choose_ADC_Chanel(7);                                                          
-    Data_Response_ADC();
+    data_response_ADC();
     Choose_ADC_Chanel(8);                                                          
-    Data_Response_ADC();
+    data_response_ADC();
     Choose_ADC_Chanel(9);                                                        
-    Data_Response_ADC();
+    data_response_ADC();
     Choose_ADC_Chanel(10);                                                          
-    Data_Response_ADC();
+    data_response_ADC();
     Choose_ADC_Chanel(11);                                                          
-    Data_Response_ADC();
+    data_response_ADC();
     Choose_ADC_Chanel(12);                                                          
-    Data_Response_ADC();
+    data_response_ADC();
     Choose_ADC_Chanel(13);                                                          
-    Data_Response_ADC();
+    data_response_ADC();
     Choose_ADC_Chanel(14);                                                          
-    Data_Response_ADC();
+    data_response_ADC();
     Choose_ADC_Chanel(15);                                                          
-    Data_Response_ADC();
+    data_response_ADC();
     Choose_ADC_Chanel(16); 
-    //for(int i = 0; i < 10000; i++);
-    Data_Response_ADC();
+    data_response_ADC();
     NVIC_DisableIRQ(PORTB_IRQn);                                                // Запрещаем прерывания по порту В
 
 }
 
-void Get_I(void)
+void get_I(void)
 {
-    UART_Send_Confirmation_command('I');
+    uart_send_confirmation_command('I');
     //PORTB->SIE=0x80000;                                                         //Установим разрешение прерывания по 19 выводу порта В - означающий готовность данных на АЦП
     NVIC_EnableIRQ(PORTB_IRQn);                                                 // Разрешим прерывания на порту В                                                
     PORT_SetBits(PORTB, A2);                                                    //Выбрали АЦП в целом      
     PORT_ResetBits(PORTB, A0);                                                  //Выбрали АЦП 1 - АЦП токов.
     
     Choose_ADC_Chanel(1);                                                       //Выбрали канал 1    
-    Data_Response_ADC();
+    data_response_ADC();
     Choose_ADC_Chanel(2);                                                          
-    Data_Response_ADC();
+    data_response_ADC();
     Choose_ADC_Chanel(3);                                                          
-    Data_Response_ADC();
+    data_response_ADC();
     Choose_ADC_Chanel(4);                                                          
-    Data_Response_ADC();
+    data_response_ADC();
     Choose_ADC_Chanel(5);                                                          
-    Data_Response_ADC();
+    data_response_ADC();
     Choose_ADC_Chanel(6);                                                          
-    Data_Response_ADC();
+    data_response_ADC();
     Choose_ADC_Chanel(7);                                                          
-    Data_Response_ADC();
+    data_response_ADC();
     Choose_ADC_Chanel(8);                                                          
-    Data_Response_ADC();
+    data_response_ADC();
     Choose_ADC_Chanel(9);                                                         
-    Data_Response_ADC();
+    data_response_ADC();
     Choose_ADC_Chanel(10);                                                          
-    Data_Response_ADC();
+    data_response_ADC();
     Choose_ADC_Chanel(11);                                                          
-    Data_Response_ADC();
+    data_response_ADC();
     Choose_ADC_Chanel(12);                                                          
-    Data_Response_ADC();
+    data_response_ADC();
     Choose_ADC_Chanel(13);                                                          
-    Data_Response_ADC();
+    data_response_ADC();
     Choose_ADC_Chanel(14);                                                          
-    Data_Response_ADC();
+    data_response_ADC();
     Choose_ADC_Chanel(15);                                                          
-    Data_Response_ADC();
-    Choose_ADC_Chanel(16); 
-    for(int i = 0; i < 10000; i++);    
-    Data_Response_ADC();
+    data_response_ADC();
+    Choose_ADC_Chanel(16);     
+    data_response_ADC();
     NVIC_DisableIRQ(PORTB_IRQn);                                                // Запрещаем прерывания по порту В
 }
 
-void Get_Doza(void)
+void get_Doza(void)
 {
-    UART_Send_Confirmation_command('D');
-    NVIC_EnableIRQ(PORTB_IRQn);                                                 // Разрешим прерывания на порту В                                                 
-    PORT_SetBits(PORTB, A2);                                                    //Выбрали АЦП в целом      
-    PORT_SetBits(PORTB, A0);                                                    //Выбрали АЦП 2 - АЦП напряжений.
+    UART_ITConfig(MDR_UART0, UART_IT_RX, DISABLE);                              //Выключить прерывание по приему  
+    char I_oder_U = 'X'; 
+    char G_oder_D = 'X'; 
+    char number_chanel = '5';
+    uint16_t result_number = 0;
     
-    Choose_ADC_Chanel(1);                                                       //Выбрали канал 1    
-    Data_Response_ADC();
-    Choose_ADC_Chanel(2);                                                          
-    Data_Response_ADC();
-    Choose_ADC_Chanel(3);                                                          
-    Data_Response_ADC();
-    Choose_ADC_Chanel(4);                                                          
-    Data_Response_ADC();
-    Choose_ADC_Chanel(5);                                                          
-    Data_Response_ADC();
-    Choose_ADC_Chanel(6);                                                          
-    Data_Response_ADC();
+
+    while (UART_GetFlagStatus (MDR_UART0, UART_FLAG_RXFF)!= SET)
+            ;
+    I_oder_U = UART_ReceiveData(MDR_UART0);
+    while (UART_GetFlagStatus (MDR_UART0, UART_FLAG_RXFF)!= SET)
+            ;
+    G_oder_D = UART_ReceiveData(MDR_UART0);
+    while (UART_GetFlagStatus (MDR_UART0, UART_FLAG_RXFF)!= SET)
+            ;
+    number_chanel = UART_ReceiveData(MDR_UART0);
+    
+    UART_ITConfig(MDR_UART0, UART_IT_RX, ENABLE);                               //Включить прерывание по приему
+    
+    
+    NVIC_EnableIRQ(PORTB_IRQn);                                                 // Разрешим прерывания на порту В                    
+    PORT_SetBits(PORTB, A2);                                                    //Выбрали АЦП в целом      
+    if (I_oder_U == 'U')
+    {
+        PORT_SetBits(PORTB, A0);                                                //Выбрали АЦП 2 - АЦП напряжений.
+    }
+    else if(I_oder_U == 'I')
+    {
+        PORT_ResetBits(PORTB, A0);                                              //Выбрали АЦП 1 - АЦП токов.
+    }
+    if (G_oder_D == 'G')
+    {
+        result_number = (uint16_t)(number_chanel - 0x30 + 1);                                                
+    }
+    else if(G_oder_D == 'D')
+    {
+        result_number = (uint16_t)(number_chanel - 0x30 + 6 + 1);                                            
+    }
+    
+    uart_send_confirmation_command('D');
+    
+    Choose_ADC_Chanel(result_number);                                           //Выбрали канал number_chanel    
+    data_response_ADC();
     NVIC_DisableIRQ(PORTB_IRQn);                                                // Запрещаем прерывания по порту В
 }
 
 
-uint8_t Change_into_HEX_(uint8_t data)
+uint8_t change_into_HEX(uint8_t data)
 {
     switch(data)
         {
@@ -312,7 +334,7 @@ uint8_t Change_into_HEX_(uint8_t data)
     return 1;    
 }
 
-static inline void Choose_ADC_Chanel(int Chanel)
+static inline void Choose_ADC_Chanel(uint16_t Chanel)
 {
     switch(Chanel)
     {
@@ -413,11 +435,14 @@ static inline void Choose_ADC_Chanel(int Chanel)
             PORT_SetBits(PORTB, Sel4);  
             break;
     }
-    for(int i = 0; i < 10000; i++);
+    for(int i = 0; i < 400; i++);
+    //for(int i = 0; i < 500; i++);
+    //for(int i = 0; i < 2500; i++);
+
 
 }
 
-static inline void Choose_DAC(int number)
+static inline void Choose_DAC(uint16_t number)
 {
     switch(number)
     {
@@ -440,8 +465,9 @@ static inline void Choose_DAC(int number)
     }
 }
 
-static inline void send_data_to_DAC(int i)
+static inline void send_data_to_DAC(uint16_t i)
 {
+    Choose_DAC(i); 
     PORT_ResetBits(PORTB, A3);                                                  // опустили Chip Sellect
     //Delay1(10);
     while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_TFE) == RESET);
@@ -463,7 +489,7 @@ static inline void send_data_to_DAC(int i)
 }
 
 
-int Invert(uint8_t x) 
+static int Invert(uint8_t x) 
 {        
     int base = 256;
     int  res = 0;

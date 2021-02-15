@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    Uart.h
   * @author  Zaznov NIIKP
-  * @version V1.0.1
-  * @date    18/03/2020
+  * @version V2.0.0
+  * @date    05/12/2020
   * @brief   This file contains all the functions prototypes for work with UART 
              from XFE project
   ******************************************************************************
@@ -19,22 +19,21 @@
 #include "mdr32f8_uart.h"               // Keil::Drivers:UART
 #include "mdr32f8_port.h"               // Keil::Drivers:PORT
 #include "mdr32f8_clkctrl.h"            // Keil::Drivers:CLKCTRL
-#include "mdr32f8_it.h"                 // Keil.EVAL-BOARD1986VE8TSupport::Board Support:Board Setup
-#include "spec.h"                       // Keil.EVAL-BOARD1986VE8TSupport::Board Support:Board Setup
+#include "mdr32f8_it.h"                 // 
+#include "spec.h"                       // 
 
 
 /* Defines -------------------------------------------------------------------*/ 
-#define UART_FREQ     8000000 //8 MHz, Calculate it going through your clock tree
+#define UART_FREQ     8000000                                                   //8 MHz 
+
 /* Variables -----------------------------------------------------------------*/
 
 /* Functions -----------------------------------------------------------------*/
-void Pin_init_uart(void);
-void uart_init(void);
-
-void UART_SendData_fixed(uint16_t Data);
-void UART_Send_Confirmation_command(char command);
-bool IsCorrect_Byte(char byt);
-bool Is_HEX_Byte(char byt);
+void uart_init(uint32_t MY_UART_CLKSRC);
+void uart_send_data(uint16_t Data);
+void uart_send_confirmation_command(char command);
+bool is_correct_byte(char byt);
+bool is_HEX_byte(char byt);
 
 
 

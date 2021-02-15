@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    main.c
   * @author  Zaznov NIIKP
-  * @version V1.0.0
-  * @date    08/06/2020
+  * @version V2.0.0
+  * @date    05/12/2020
   * @brief   This is the main file of project MBP_XFE
   ******************************************************************************
   * FILE main.c
@@ -11,10 +11,8 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-//#include "my_assert.h"
+#include "my_assert.h"
 /* Defines -------------------------------------------------------------------*/ 
-
-
 
 int main(void)
 {   
@@ -34,20 +32,34 @@ void mcu_init()
 {
 	POR_disable();                                                              /* Disable Power-on-Reset control. Hold the RESET button down until operation complete */
 	CLKCTRL_DeInit();                                                           /* Set CLKCTRL to default */
-	CLKCTRL_HSEconfig(CLKCTRL_HSE0_CLK_ON);                                     /* Enable HSE0 clock */
-	while(CLKCTRL_HSEstatus(CLKCTRL_HSEn_STAT_HSE0_RDY) != SUCCESS){}	        /* Check HSE success, enable PLL0, check PLL0 success, select MAX_CLK src */
-	CLKCTRL_MAX_CLKSelection(CLKCTRL_MAX_CLK_HSE0div1);	                        // Select MAX_CLK, MAX_CLK = HSE0
+
+	CLKCTRL_HSEconfig(CURRENT_CLK);                                             // Try to enable HSE0 clock 
+    for(int i = 0; i < 50; i++){
+        if(CLKCTRL_HSEstatus(CURRENT_CLK_RDY) == SUCCESS){
+            break;
+        }
+    }
+    if(CLKCTRL_HSEstatus(CURRENT_CLK_RDY) != SUCCESS){                          // if HSE0 does not clock 
+        CURRENT_CLK         = HSE1_ON;                                          // change variables for HSE1
+        CURRENT_CLK_RDY     = HSE1_RDY;
+        CURRENT_CLKCTRL_MAX = HSE1div1;
+        CURRENT_UART_CLK    = UART_HSE1;
+        
+        CLKCTRL_HSEconfig(CLKCTRL_HSE0_CLK_OFF);                                // disable HSE0
+        CLKCTRL_HSEconfig(CURRENT_CLK);                                         // try to enable HSE1
+    }
+    while(CLKCTRL_HSEstatus(CURRENT_CLK_RDY) != SUCCESS){}	                    // Check HSE success, enable PLL0, check PLL0 success, select MAX_CLK src 
+	CLKCTRL_MAX_CLKSelection(CURRENT_CLKCTRL_MAX);	                            // Select MAX_CLK, MAX_CLK = HSE
     
     KEY_reg_accs();
     CLKCTRL_PER0_CLKcmd(CLKCTRL_PER0_CLK_MDR_PORTE_EN,ENABLE);                  //Разрешение тактирования порта E
     CLKCTRL_PER0_CLKcmd(CLKCTRL_PER0_CLK_MDR_PORTB_EN,ENABLE);                  //Разрешение тактирования порта B    
-    uart_init(); 
-    spi_init();   
-    MKAS_init();
-    Pin_init();           
+    uart_init(CURRENT_UART_CLK);     
+    spi_init();       
+    pin_init();               
 }
 
-void Pin_init()
+void pin_init()
 {
  
     PORT_InitTypeDef GPIO_user_ini;
@@ -56,7 +68,7 @@ void Pin_init()
     GPIO_user_ini.PORT_SFUNC            = PORT_SFUNC_5;
     GPIO_user_ini.PORT_SANALOG          = PORT_SANALOG_DIGITAL;
     GPIO_user_ini.PORT_SPWR             = PORT_SPWR_10;
-    PORT_Init(PORTE, &GPIO_user_ini);  
+    PORT_Init(PORTE, &GPIO_user_ini); 
 
     PORT_InitTypeDef GPIO_driver_user_ini;
     GPIO_driver_user_ini.PORT_Pin              = (PORT_Pin_23|PORT_Pin_22);     // Enable драйвера приема-передачи
@@ -79,7 +91,7 @@ void Pin_init()
     PORT_Init(PORTB, &GPIO_B_user_ini);
     
     PORT_InitTypeDef GPIO_Bi_user_ini;
-    GPIO_Bi_user_ini.PORT_Pin              = (PORT_Pin_18|PORT_Pin_20|PORT_Pin_21|PORT_Pin_22|PORT_Pin_27|PORT_Pin_28|PORT_Pin_29|PORT_Pin_30|PORT_Pin_31);
+    GPIO_Bi_user_ini.PORT_Pin              = (PORT_Pin_18|PORT_Pin_20|PORT_Pin_21|PORT_Pin_22|PORT_Pin_25|PORT_Pin_27|PORT_Pin_28|PORT_Pin_29|PORT_Pin_30|PORT_Pin_31);
     GPIO_Bi_user_ini.PORT_SOE              = PORT_SOE_OUT;
     GPIO_Bi_user_ini.PORT_SFUNC            = PORT_SFUNC_USER;
     GPIO_Bi_user_ini.PORT_SANALOG          = PORT_SANALOG_DIGITAL;
@@ -94,6 +106,7 @@ void Pin_init()
     PORT_SetBits(PORTB, PORT_Pin_22);
     PORT_SetBits(PORTB, PORT_Pin_21);
     PORT_SetBits(PORTB, PORT_Pin_20);
+    PORT_SetBits(PORTB, PORT_Pin_25);
     
 }
 /******************* (C) COPYRIGHT 2020 NIIKP *********************************
