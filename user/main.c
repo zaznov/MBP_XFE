@@ -11,6 +11,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "MDR1986VE8T.h"
 #include "my_assert.h"
 /* Defines -------------------------------------------------------------------*/ 
 
@@ -18,9 +19,13 @@ int main(void)
 {   
         
     
+    //IWDG->
+
     mcu_init();
     while(1)
     {    
+        
+        
         state_T = (STATE_FUNC_PTR_t)(*state_T)();
     }
 }

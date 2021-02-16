@@ -87,6 +87,50 @@ void send_one_byte_from_adc(int data)
 
 void data_response_ADC()
 {
+    uint16_t data_from_adc[5];
+    for(int i = 0; i < 5; i++)
+    {
+        data_from_adc[i] = adc_read();
+    }
+    bubble_sort(data_from_adc);
+    
+    
+    send_one_byte_from_adc(data_from_adc[3] >> 8);
+    send_one_byte_from_adc(data_from_adc[3] >> 4);
+    send_one_byte_from_adc(data_from_adc[3]);
+    uart_send_data(0x0A);
+    ADC_Ready = 0;
+    NVIC_EnableIRQ(PORTB_IRQn);
+}
+
+static void swap(uint16_t* a, uint16_t* b)
+{
+    uint16_t tmp = *a;
+    *a = *b;
+    *b = tmp;
+}
+static void bubble_sort(uint16_t* my_arry)
+{
+    uint8_t lenth = 5;
+    bool not_sorted = true;
+    
+    while(not_sorted)
+    {
+        not_sorted = false;
+        for(uint8_t i = 0; i < lenth-1; i++)
+        {
+            if(my_arry[i] > my_arry[i+1])
+            {
+                swap(&my_arry[i], &my_arry[i+1]);
+                not_sorted = true;
+            }
+        }
+        lenth--;
+    }
+}
+
+static uint16_t adc_read(void)
+{
     uint16_t byte1 = 0;
     uint16_t byte2 = 0;
     PORT_SetBits(PORTB, Start_ADC);                                             //Подали команду на Start                                                
@@ -94,25 +138,19 @@ void data_response_ADC()
     //while(!ADC_Ready); 
     
     PORT_ResetBits(PORTB, A3);                                                  // Начали считывать данные с АЦП
-    while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_TFE) == RESET);
-    SSP_SendData(MDR_SSP0, 0x33);
-    while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_RNE) == RESET);
-    byte1 = SSP_ReceiveData(MDR_SSP0);
-    while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_TFE) == RESET);
-    SSP_SendData(MDR_SSP0, 0x33);
-    while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_RNE) == RESET);
-    byte2 = SSP_ReceiveData(MDR_SSP0);
+        while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_TFE) == RESET);
+        SSP_SendData(MDR_SSP0, 0x33);
+        while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_RNE) == RESET);
+        byte1 = SSP_ReceiveData(MDR_SSP0);
+        while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_TFE) == RESET);
+        SSP_SendData(MDR_SSP0, 0x33);
+        while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_RNE) == RESET);
+        byte2 = SSP_ReceiveData(MDR_SSP0);
     PORT_SetBits(PORTB, A3);                                                    // Закончили считывать данные с АЦП
-    
     uint16_t actual = ((byte1 << 4) | (byte2 >> 4));
-    send_one_byte_from_adc(actual >> 8);
-    send_one_byte_from_adc(actual >> 4);
-    send_one_byte_from_adc(actual);
-    uart_send_data(0x0A);
-    ADC_Ready = 0;
-    NVIC_EnableIRQ(PORTB_IRQn);
+    return actual;
+    
 }
-
 
 void set_U_local(void)
 {

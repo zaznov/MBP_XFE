@@ -41,7 +41,9 @@ void get_I(void);
 void get_Doza(void);
 uint8_t change_into_HEX(uint8_t data);
 void MKAS_init(void);
-
+static uint16_t adc_read(void);
+static void swap(uint16_t* a, uint16_t* b);
+static void bubble_sort(uint16_t* my_arry);
 
 
 #endif /* __MKAS_H_ */
