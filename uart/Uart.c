@@ -28,10 +28,10 @@ char Permissible_value[24] = {'0','1','2','3','4','5','6','7','8','9','A','B','C
 void uart_init(uint32_t MY_UART_CLKSRC)
 {
     CLKCTRL_PER1_CLKcmd(CLKCTRL_PER1_CLK_MDR_UART0_EN, ENABLE);                 // Вкл. тактирование контроллера UART0
-    UART_CLK_en(MDR_UART0, UART_CLKSRC_HSE0, UART_CLKdiv1);                     // Настройка тактирование контроллера UART0
+    UART_CLK_en(MDR_UART0, MY_UART_CLKSRC, UART_CLKdiv1);                     // Настройка тактирование контроллера UART0
     
     UART_InitTypeDef uart_user_ini;
-    uart_user_ini.UART_BaudRate             = 30000;                             // Скорость передачи данных
+    uart_user_ini.UART_BaudRate             = 19200;                             // Скорость передачи данных
     uart_user_ini.UART_FIFOMode             = UART_FIFO_OFF;                    // Включение/отключение буфера
     uart_user_ini.UART_HardwareFlowControl  = (UART_HardwareFlowControl_RXE | UART_HardwareFlowControl_TXE);    // Аппаратный контроль за передачей и приемом данных. Особенность(!!) - включает RX and TX !!
     uart_user_ini.UART_Parity               = UART_Parity_No;                   // Контроль четности

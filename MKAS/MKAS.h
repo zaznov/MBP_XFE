@@ -18,6 +18,7 @@
 /* Includes ------------------------------------------------------------------*/ 
 #include "Spi.h"
 #include "Uart.h"
+#include "delays.h"
 
 /* defines -------------------------------------------------------------------*/  
 #define Start_ADC   PORT_Pin_27                                                 // Start ADC

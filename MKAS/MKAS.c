@@ -202,40 +202,12 @@ void get_U(void)
     PORT_SetBits(PORTB, A2);                                                    //Выбрали АЦП в целом      
     PORT_SetBits(PORTB, A0);                                                    //Выбрали АЦП 2 - АЦП напряжений.
     
-    Choose_ADC_Chanel(1);                                                       //Выбрали канал 1    
-    data_response_ADC();
-    Choose_ADC_Chanel(2);                                                          
-    data_response_ADC();
-    Choose_ADC_Chanel(3);                                                          
-    data_response_ADC();
-    Choose_ADC_Chanel(4);                                                          
-    data_response_ADC();
-    Choose_ADC_Chanel(5);                                                          
-    data_response_ADC();
-    Choose_ADC_Chanel(6);                                                          
-    data_response_ADC();
-    Choose_ADC_Chanel(7);                                                          
-    data_response_ADC();
-    Choose_ADC_Chanel(8);                                                          
-    data_response_ADC();
-    Choose_ADC_Chanel(9);                                                        
-    data_response_ADC();
-    Choose_ADC_Chanel(10);                                                          
-    data_response_ADC();
-    Choose_ADC_Chanel(11);                                                          
-    data_response_ADC();
-    Choose_ADC_Chanel(12);                                                          
-    data_response_ADC();
-    Choose_ADC_Chanel(13);                                                          
-    data_response_ADC();
-    Choose_ADC_Chanel(14);                                                          
-    data_response_ADC();
-    Choose_ADC_Chanel(15);                                                          
-    data_response_ADC();
-    Choose_ADC_Chanel(16); 
-    data_response_ADC();
+    for(uint8_t i = 1; i <= 16; i++)
+    {
+        Choose_ADC_Chanel(i);                                                       //Выбрали канал 1    
+        data_response_ADC();
+    }
     NVIC_DisableIRQ(PORTB_IRQn);                                                // Запрещаем прерывания по порту В
-
 }
 
 void get_I(void)
@@ -246,38 +218,11 @@ void get_I(void)
     PORT_SetBits(PORTB, A2);                                                    //Выбрали АЦП в целом      
     PORT_ResetBits(PORTB, A0);                                                  //Выбрали АЦП 1 - АЦП токов.
     
-    Choose_ADC_Chanel(1);                                                       //Выбрали канал 1    
-    data_response_ADC();
-    Choose_ADC_Chanel(2);                                                          
-    data_response_ADC();
-    Choose_ADC_Chanel(3);                                                          
-    data_response_ADC();
-    Choose_ADC_Chanel(4);                                                          
-    data_response_ADC();
-    Choose_ADC_Chanel(5);                                                          
-    data_response_ADC();
-    Choose_ADC_Chanel(6);                                                          
-    data_response_ADC();
-    Choose_ADC_Chanel(7);                                                          
-    data_response_ADC();
-    Choose_ADC_Chanel(8);                                                          
-    data_response_ADC();
-    Choose_ADC_Chanel(9);                                                         
-    data_response_ADC();
-    Choose_ADC_Chanel(10);                                                          
-    data_response_ADC();
-    Choose_ADC_Chanel(11);                                                          
-    data_response_ADC();
-    Choose_ADC_Chanel(12);                                                          
-    data_response_ADC();
-    Choose_ADC_Chanel(13);                                                          
-    data_response_ADC();
-    Choose_ADC_Chanel(14);                                                          
-    data_response_ADC();
-    Choose_ADC_Chanel(15);                                                          
-    data_response_ADC();
-    Choose_ADC_Chanel(16);     
-    data_response_ADC();
+    for(uint8_t i = 1; i <= 16; i++)
+    {
+        Choose_ADC_Chanel(i);                                                       //Выбрали канал 1    
+        data_response_ADC();
+    }
     NVIC_DisableIRQ(PORTB_IRQn);                                                // Запрещаем прерывания по порту В
 }
 
@@ -308,20 +253,28 @@ void get_Doza(void)
     if (I_oder_U == 'U')
     {
         PORT_SetBits(PORTB, A0);                                                //Выбрали АЦП 2 - АЦП напряжений.
+        if (G_oder_D == 'G')
+        {
+            result_number = (uint16_t)(number_chanel - 0x30 + 1);                                                
+        }
+        else if(G_oder_D == 'D')
+        {
+            result_number = (uint16_t)(number_chanel - 0x30 + 6 + 1);                                            
+        }
     }
     else if(I_oder_U == 'I')
     {
         PORT_ResetBits(PORTB, A0);                                              //Выбрали АЦП 1 - АЦП токов.
+        if (G_oder_D == 'D')
+        {
+            result_number = (uint16_t)(number_chanel - 0x30 + 1);                                                
+        }
+        else if(G_oder_D == 'S')
+        {
+            result_number = (uint16_t)(number_chanel - 0x30 + 6 + 1);                                            
+        }
     }
-    if (G_oder_D == 'G')
-    {
-        result_number = (uint16_t)(number_chanel - 0x30 + 1);                                                
-    }
-    else if(G_oder_D == 'D')
-    {
-        result_number = (uint16_t)(number_chanel - 0x30 + 6 + 1);                                            
-    }
-    
+
     uart_send_confirmation_command('D');
     
     Choose_ADC_Chanel(result_number);                                           //Выбрали канал number_chanel    
@@ -473,11 +426,8 @@ static inline void Choose_ADC_Chanel(uint16_t Chanel)
             PORT_SetBits(PORTB, Sel4);  
             break;
     }
-    for(int i = 0; i < 400; i++);
-    //for(int i = 0; i < 500; i++);
-    //for(int i = 0; i < 2500; i++);
-
-
+     delay_mks(50);
+    //for(int i = 0; i < 400; i++);
 }
 
 static inline void Choose_DAC(uint16_t number)

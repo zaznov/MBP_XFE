@@ -39,7 +39,7 @@
 
 #include "MDR1986VE8T.h"
 #include "mdr32f8_config.h"
-
+#include "system_1986ve8t.h"
 /** @} */ /* End of group System_Private_Includes */
 
 /** @addtogroup __MDR1986VE8_System_Private_Variables __MDR1986VE8 System Private Variables
@@ -50,7 +50,7 @@
 *  Clock Definitions
 *******************************************************************************/
   static const uint32_t _GenFreqsHz[8] = {HSI_Value, HSI_Value/2, HSE0_Value, HSE0_Value/2, HSE1_Value, HSE1_Value/2, LSI_Value, LSE_Value};
-  uint32_t SystemCoreClock = (uint32_t)8000000;         /*!< System Clock Frequency (Core Clock)
+  /*uint32_t SystemCoreClock = (uint32_t)8000000; */        /*!< System Clock Frequency (Core Clock)
                                                          *   default value */
 
 /** @} */ /* End of group __MDR1986VE8_System_Private_Variables */

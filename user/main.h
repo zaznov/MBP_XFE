@@ -32,7 +32,8 @@
 #include "handlers.h"
 #include "state_machine.h"
 #include "my_assert.h"
-
+#include "wdt.h"
+#include "delays.h"
 
 /* Defines -------------------------------------------------------------------*/ 
 typedef enum{
@@ -55,6 +56,7 @@ typedef enum{
 }UART_CLK;
 
 
+
 /* Variables -----------------------------------------------------------------*/
 extern STATE_FUNC_PTR_t state_T;
 
@@ -63,7 +65,7 @@ CLK_RDY     CURRENT_CLK_RDY     = HSE0_RDY;
 CLKCTRL_MAX CURRENT_CLKCTRL_MAX = HSE0div1;
 UART_CLK    CURRENT_UART_CLK    = UART_HSE0;
 
-
+uint32_t SystemCoreClock = 8000000;
 /* Functions -----------------------------------------------------------------*/
 void pin_init(void);
 void mcu_init(void);

@@ -55,6 +55,11 @@ void IRQ_PORTB_Handler()
 }
 
 
+void SysTick_Handler(void)
+{
+    ticks_Wert++;
+} 
+
 /************************* 2020 Zaznov NIIKP ***********************************
 *
 * END OF FILE handlers.c */

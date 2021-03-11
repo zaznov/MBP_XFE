@@ -1,32 +1,32 @@
 /**
   ******************************************************************************
-  * @file    delays.h
+  * @file    wdt.h
   * @author  Zaznov NIIKP
-  * @version V1.0.1
-  * @date    28/10/2019
-  * @brief   This file contains all the functions prototypes for work with
-  delays-library of Cortex-M4 family
+  * @version V1.0.0
+  * @date    12/02/2021
+  * @brief   This file contains all the functions prototypes for work with...
+  To view Datasheet visit:
+  https:....
   ******************************************************************************
-  * FILE delays.h
+  * FILE wdt.h
   */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __DELAY_H_
-#define __DELAY_H_
-/* Includes ------------------------------------------------------------------*/  
-#include "MDR1986VE8T.h"
+#ifndef __WGT_H_
+#define __WGT_H_
+/* Includes ------------------------------------------------------------------*/ 
+//#include "MDR1986VE8T.h"
 /* defines -------------------------------------------------------------------*/  
-#define SYSTICK_MAX_VALUE 0xFFFFFF
 
 /* Variables -----------------------------------------------------------------*/
 
 /* Functions -----------------------------------------------------------------*/
-void delay_mls(uint32_t delay_in_mils);
-void delay_mks(uint32_t delay_in_mils);
-
-#endif /* __DELAY_H_ */
+void wdt_init(void);
+void wdt_rewrite(void);
+void wdt_reinit(void);
+#endif /* __WGT_H_ */
 
 /************************* 2020 Zaznov NIIKP ***********************************
 *
-* END OF FILE delays.h */
+* END OF FILE wdt.h */
 

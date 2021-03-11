@@ -64,4 +64,4 @@ extern void SystemCoreClockUpdate(void);
 
 /******************* (C) COPYRIGHT Milandr *********************************
 *
-* END OF FILE system_1986ve8t.h
+* END OF FILE system_1986ve8t.h*/

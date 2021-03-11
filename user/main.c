@@ -11,22 +11,20 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "MDR1986VE8T.h"
 #include "my_assert.h"
+//#include "MDR1986VE8T.h"
 /* Defines -------------------------------------------------------------------*/ 
 
 int main(void)
 {   
         
-    
-    //IWDG->
 
     mcu_init();
+    
     while(1)
     {    
-        
-        
         state_T = (STATE_FUNC_PTR_t)(*state_T)();
+        wdt_rewrite();
     }
 }
 
@@ -59,9 +57,12 @@ void mcu_init()
     KEY_reg_accs();
     CLKCTRL_PER0_CLKcmd(CLKCTRL_PER0_CLK_MDR_PORTE_EN,ENABLE);                  //Разрешение тактирования порта E
     CLKCTRL_PER0_CLKcmd(CLKCTRL_PER0_CLK_MDR_PORTB_EN,ENABLE);                  //Разрешение тактирования порта B    
+    CLKCTRL_PER0_CLKcmd(CLKCTRL_PER0_CLK_MDR_PORTC_EN,ENABLE);                  //Разрешение тактирования порта C
     uart_init(CURRENT_UART_CLK);     
     spi_init();       
-    pin_init();               
+    pin_init();  
+    wdt_init();      
+    NVIC_SetPriority(SysTick_IRQn, 1);                                          // Установить приоритет EXTI0        
 }
 
 void pin_init()
@@ -112,6 +113,16 @@ void pin_init()
     PORT_SetBits(PORTB, PORT_Pin_21);
     PORT_SetBits(PORTB, PORT_Pin_20);
     PORT_SetBits(PORTB, PORT_Pin_25);
+    
+    
+    PORT_InitTypeDef GPIO_Ci_user_ini;
+    GPIO_Ci_user_ini.PORT_Pin              = (PORT_Pin_5);
+    GPIO_Ci_user_ini.PORT_SOE              = PORT_SOE_OUT;
+    GPIO_Ci_user_ini.PORT_SFUNC            = PORT_SFUNC_USER;
+    GPIO_Ci_user_ini.PORT_SANALOG          = PORT_SANALOG_DIGITAL;
+    GPIO_Ci_user_ini.PORT_SPD              = PORT_SPD_OFF;
+    GPIO_Ci_user_ini.PORT_SPWR             = PORT_SPWR_10;
+    PORT_Init(PORTC, &GPIO_Ci_user_ini); 
     
 }
 /******************* (C) COPYRIGHT 2020 NIIKP *********************************
