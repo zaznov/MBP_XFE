@@ -1,33 +1,38 @@
 /**
   ******************************************************************************
-  * @file    handlers.h
+  * @file    logic.h
   * @author  Zaznov NIIKP
-  * @version V3.0.0
+  * @version V1.0.0
   * @date    01/05/2021
-  * @brief   This file contains functions prototypes for work with interrupt
-  handlers of stm32f4xx
+  * @brief   This file contains all the functions prototypes for work with...
+  To view Datasheet visit:
+  https:....
   ******************************************************************************
-  * FILE handlers.h
+  * FILE logic.h
   */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __HANDLERS_H_
-#define __HANDLERS_H_
-/* Includes ------------------------------------------------------------------*/  
-#include "mdr32f8_it.h"                 // 
-#include "Uart.h"
-#include "state_machine.h"
-
+#ifndef __LOGIC_H_
+#define __LOGIC_H_
+/* Includes ------------------------------------------------------------------*/ 
+#include "MDR1986VE8T.h"
+#include "my_assert.h"
+#include <string.h>
 /* defines -------------------------------------------------------------------*/  
 
+typedef enum{
+    MODULE_MKDS,
+    MODULE_MKAS,
+}MODULE;
+
 /* Variables -----------------------------------------------------------------*/
-extern volatile _Bool ADC_Ready;                                              
-extern  uint32_t ticks_Wert;
 
 /* Functions -----------------------------------------------------------------*/
-
-#endif /* __HANDLERS_H_ */
+void clean_uart_buffer(void);
+void change_into_HEX(uint8_t *data, MODULE MODULE_name);
+#endif /* __LOGIC_H_ */
 
 /************************* 2020 Zaznov NIIKP ***********************************
 *
-* END OF FILE handlers.h */
+* END OF FILE logic.h */
+

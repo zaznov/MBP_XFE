@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    MKAS.c
   * @author  Zaznov NIIKP
-  * @version V2.0.0
-  * @date    05/12/2020
+  * @version V3.0.0
+  * @date    01/05/2021
   * @brief   This file provides firmware functions to manage the following 
   *          functionalities of the MKAS-driver:           
   *           + ...
@@ -155,11 +155,7 @@ static uint16_t adc_read(void)
 void set_U_local(void)
 {
     uart_send_confirmation_command('S');
-    for(int i = 0; i < 32; i++)
-        {
-            DAC_data[i] = change_into_HEX(DAC_data[i]);                        // Меняем значения для передачи в ЦАП из Аски в Хекс
-        }
-    
+    change_into_HEX((uint8_t *)DAC_data, MODULE_MKAS);                          // Меняем значения для передачи в ЦАП из Аски в Хекс
     PORT_ResetBits(PORTB, A2);                                                  //Выбрали ЦАП в целом      
     for(int j = 0; j < 32; j = j+8)
         {
@@ -281,50 +277,6 @@ void get_Doza(void)
     data_response_ADC();
     NVIC_DisableIRQ(PORTB_IRQn);                                                // Запрещаем прерывания по порту В
 }
-
-
-uint8_t change_into_HEX(uint8_t data)
-{
-    switch(data)
-        {
-            case(0x0A):
-                return 0x0A;
-            case(0x30):
-                return 0x00;
-            case(0x31):
-                return 0x01;
-            case(0x32):
-                return 0x02;
-            case(0x33):
-                return 0x03;
-            case(0x34):
-                return 0x04;
-            case(0x35):
-                return 0x05;
-            case(0x36):
-                return 0x06;
-            case(0x37):
-                return 0x07;
-            case(0x38):
-                return 0x08;
-            case(0x39):
-                return 0x09;
-            case(0x41):
-                return 0x0A;
-            case(0x42):
-                return 0x0B;
-            case(0x43):
-                return 0x0C;
-            case(0x44):
-                return 0x0D;
-            case(0x45):
-                return 0x0E;
-            case(0x46):
-                return 0x0F;
-        } 
-    return 1;    
-}
-
 static inline void Choose_ADC_Chanel(uint16_t Chanel)
 {
     switch(Chanel)

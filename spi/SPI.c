@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    Spi.c
   * @author  Zaznov NIIKP
-  * @version V2.0.0
-  * @date    05/12/2020
+  * @version V3.0.0
+  * @date    01/05/2021
   * @brief   This file provides all the functions prototypes for work with SPI 
              from XFE project
   ******************************************************************************
@@ -14,7 +14,7 @@
 
 /* My Includes ---------------------------------------------------------------*/
 #include "Spi.h"
-
+//#include "logic.h"
 /* Defines -------------------------------------------------------------------*/ 
 
 /* Variables -----------------------------------------------------------------*/
@@ -54,7 +54,7 @@ void spi_init()
     //NVIC_EnableIRQ(SSP0_IRQn);                                                //Включить общее прерывание по SPI
 }
 
-inline void spi_init_MKAS()
+void spi_reinit(MODULE MODULE_NAME)
 { 
     SSP_Cmd(MDR_SSP0, DISABLE);                                                  //Выключение SPI
     SSP_DeInit(MDR_SSP0);
@@ -63,34 +63,13 @@ inline void spi_init_MKAS()
     SSP_InitStructure.SSP_CPSDVSR               = 2;                            
     SSP_InitStructure.SSP_Mode                  = SSP_ModeMaster;
     SSP_InitStructure.SSP_WordLength            = SSP_WordLength8b;
-    SSP_InitStructure.SSP_SPH                   = SSP_SPH_2Edge;                                
+    SSP_InitStructure.SSP_SPH                   = (MODULE_NAME == MODULE_MKAS) ? SSP_SPH_2Edge : SSP_SPH_1Edge;                               
     SSP_InitStructure.SSP_SPO                   = SSP_SPO_Low;
     SSP_InitStructure.SSP_FRF                   = SSP_FRF_SPI_Motorola;
     SSP_InitStructure.SSP_HardwareFlowControl   = SSP_HardwareFlowControl_SSE;
     SSP_Init (MDR_SSP0,&SSP_InitStructure);                                     
     SSP_Cmd(MDR_SSP0, ENABLE);                                                  //Включение SPI
 }
-
-inline void spi_init_MKDS()
-{
-    SSP_Cmd(MDR_SSP0, DISABLE);                                                  //Выключение SPI
-    SSP_DeInit(MDR_SSP0);
-    SSP_InitTypeDef SSP_InitStructure; 
-    SSP_InitStructure.SSP_SCR                   = 0;                            
-    SSP_InitStructure.SSP_CPSDVSR               = 2;                            
-    SSP_InitStructure.SSP_Mode                  = SSP_ModeMaster;
-    SSP_InitStructure.SSP_WordLength            = SSP_WordLength8b;
-    SSP_InitStructure.SSP_SPH                   = SSP_SPH_1Edge;                                
-    SSP_InitStructure.SSP_SPO                   = SSP_SPO_Low;
-    SSP_InitStructure.SSP_FRF                   = SSP_FRF_SPI_Motorola;
-    SSP_InitStructure.SSP_HardwareFlowControl   = SSP_HardwareFlowControl_SSE;
-    SSP_Init (MDR_SSP0,&SSP_InitStructure);         
-    SSP_Cmd(MDR_SSP0, ENABLE);                                                  //Включение SPI
-}
-
-
-
-
 /******************* (C) COPYRIGHT 2020 NIIKP *********************************
 *
 * END OF FILE Spi.c */

@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    main.c
   * @author  Zaznov NIIKP
-  * @version V2.0.0
-  * @date    05/12/2020
+  * @version V3.0.0
+  * @date    01/05/2021
   * @brief   This is the main file of project MBP_XFE
   ******************************************************************************
   * FILE main.c
@@ -12,26 +12,21 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "my_assert.h"
-//#include "MDR1986VE8T.h"
 /* Defines -------------------------------------------------------------------*/ 
 
 int main(void)
-{   
-        
-
-    mcu_init();
-    
+{     
+    mcu_perif_init();
     while(1)
     {    
         state_T = (STATE_FUNC_PTR_t)(*state_T)();
-        wdt_rewrite();
+        //wdt_rewrite();
     }
 }
 
 
 
-
-void mcu_init()
+void mcu_perif_init()
 {
 	POR_disable();                                                              /* Disable Power-on-Reset control. Hold the RESET button down until operation complete */
 	CLKCTRL_DeInit();                                                           /* Set CLKCTRL to default */
@@ -61,7 +56,7 @@ void mcu_init()
     uart_init(CURRENT_UART_CLK);     
     spi_init();       
     pin_init();  
-    wdt_init();      
+    //wdt_init();      
     NVIC_SetPriority(SysTick_IRQn, 1);                                          // Установить приоритет EXTI0        
 }
 

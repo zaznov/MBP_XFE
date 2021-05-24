@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    MKAS.h
   * @author  Zaznov NIIKP
-  * @version V2.0.0
-  * @date    05/12/2020
+  * @version V3.0.0
+  * @date    01/05/2021
   * @brief   This file contains all the functions prototypes for work with...
   To view Datasheet visit:
   https:....
@@ -19,6 +19,7 @@
 #include "Spi.h"
 #include "Uart.h"
 #include "delays.h"
+#include "logic.h"
 
 /* defines -------------------------------------------------------------------*/  
 #define Start_ADC   PORT_Pin_27                                                 // Start ADC
@@ -40,7 +41,6 @@ void set_U_local(void);
 void get_U(void);
 void get_I(void);
 void get_Doza(void);
-uint8_t change_into_HEX(uint8_t data);
 void MKAS_init(void);
 static uint16_t adc_read(void);
 static void swap(uint16_t* a, uint16_t* b);

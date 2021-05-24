@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    Uart.h
   * @author  Zaznov NIIKP
-  * @version V2.0.0
-  * @date    05/12/2020
+  * @version V3.0.0
+  * @date    01/05/2021
   * @brief   This file contains all the functions prototypes for work with UART 
              from XFE project
   ******************************************************************************
@@ -32,8 +32,8 @@
 void uart_init(uint32_t MY_UART_CLKSRC);
 void uart_send_data(uint16_t Data);
 void uart_send_confirmation_command(char command);
-bool is_correct_byte(char byt);
-bool is_HEX_byte(char byt);
+bool is_correct_byte(char byte);
+bool is_HEX_byte(char byte);
 
 
 

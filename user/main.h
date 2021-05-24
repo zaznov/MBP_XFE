@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    Main.h
   * @author  Zaznov NIIKP
-  * @version V2.0.0
-  * @date    05/12/2020
+  * @version V3.0.0
+  * @date    01/05/2021
   * @brief   This file contains all MAIN functions prototypes for work with MAIN 
              from XFE project
   ******************************************************************************
@@ -27,13 +27,9 @@
 /* My Includes ---------------------------------------------------------------*/
 #include "Uart.h"
 #include "Spi.h"
-#include "MKAS.h"
-#include "MKDS.h"
-#include "handlers.h"
 #include "state_machine.h"
 #include "my_assert.h"
 #include "wdt.h"
-#include "delays.h"
 
 /* Defines -------------------------------------------------------------------*/ 
 typedef enum{
@@ -68,7 +64,7 @@ UART_CLK    CURRENT_UART_CLK    = UART_HSE0;
 uint32_t SystemCoreClock = 8000000;
 /* Functions -----------------------------------------------------------------*/
 void pin_init(void);
-void mcu_init(void);
+void mcu_perif_init(void);
 
 #endif /* __XFE_MAIN_H */
 /******************* (C) COPYRIGHT 2020 NIIKP *********************************

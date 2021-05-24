@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    Uart.c
   * @author  Zaznov NIIKP
-  * @version V2.0.0
-  * @date    05/12/2020
+  * @version V3.0.0
+  * @date    01/05/2021
   * @brief   This file provides all the functions prototypes for work with UART 
              from XFE project
   ******************************************************************************
@@ -20,7 +20,7 @@
 /* Defines -------------------------------------------------------------------*/ 
 
 /* Variables -----------------------------------------------------------------*/
-char Permissible_value[24] = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F','I','M','O','R','S','T','U','\n'};  // 0x10 - означает символ Enter. Список разрешенных символов.
+const static char Permissible_value[26] = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F', 'G', 'I','M','O','R','S','T','U','W','\n'};  // 0x10 - означает символ Enter. Список разрешенных символов.
     
 /* Functions -----------------------------------------------------------------*/
 
@@ -45,23 +45,23 @@ void uart_init(uint32_t MY_UART_CLKSRC)
 }
 
 
-bool is_correct_byte(char byt)                                     // inline - место вызова функции при компиляции просто разворачивается в ее код. 
+bool is_correct_byte(char byte)                                     // inline - место вызова функции при компиляции просто разворачивается в ее код. 
 {
-    for(int i = 0; i < 24; i++)
+    for(int i = 0; i < 26; i++)
     {
-        if (Permissible_value[i] == byt) return true;
-        if (i == 23) 
+        if (Permissible_value[i] == byte) return true;
+        if (i == 25) 
         {
             return false;
         }
     }
     return false;
 }
-bool is_HEX_byte(char byt)                                               // inline - место вызова функции при компиляции просто разворачивается в ее код. 
+bool is_HEX_byte(char byte)                                               // inline - место вызова функции при компиляции просто разворачивается в ее код. 
 {
     for(int i = 0; i <= 0x0F; i++)
     {
-        if (Permissible_value[i] == byt || byt == 0x0A) return true;
+        if (Permissible_value[i] == byte || byte == 0x0A) return true;
     }
     return false;
 }
@@ -100,6 +100,9 @@ void uart_send_confirmation_command(char command)                               
                 break;
             case ('O'):
                 Data =0x4F4F;
+                break;
+            case ('G'):
+                Data =0x474F;
                 break;
 /*----------------------------------------------------------------------------*/   
         } 
