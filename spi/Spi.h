@@ -19,8 +19,9 @@
 #include "mdr32f8_port.h"               // Keil::Drivers:PORT
 #include "mdr32f8_clkctrl.h"            // Keil::Drivers:CLKCTRL
 #include "spec.h"                       // 
-
 #include "logic.h"
+
+
 /* Defines -------------------------------------------------------------------*/ 
 #define CS_MKDS_1_DOWN()  PORT_ResetBits(PORTB, PORT_Pin_25)
 #define CS_MKDS_1_UP()    PORT_SetBits(PORTB, PORT_Pin_25)

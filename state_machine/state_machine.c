@@ -39,22 +39,19 @@ static void *state_setting_u(void);
 static void *state_mesuring_u(void);
 static void *state_mesuring_i(void);
 static void *state_mesuring_d(void);
-/*-------------------------------------------------Ã ƒ—-----------------------*/
+/*-------------------------------------------------Ã ƒ— 1---------------------*/
 static void *state_reboot_MKDS(void);
 static void *state_start_MKDS(void);
 static void *state_mesuring_tzch_MKDS(void);
 static void *state_read_results_MKDS(void);
+/*-------------------------------------------------Ã ƒ— 2---------------------*/
+static void *state_data_to_MKDS(void);
+static void *state_set_MKDS_read(void);
+static void *state_set_MKDS_write(void);
+static void *state_data_from_MKDS(void);
 
-static void *state_data_to_MKDS_1(void);
-static void *state_data_to_MKDS_2(void);
-static void *state_set_MKDS_1_read(void);
-static void *state_set_MKDS_1_write(void);
-static void *state_set_MKDS_2_read(void);
-static void *state_set_MKDS_2_write(void);
-static void *state_data_from_MKDS_1(void);
-static void *state_data_from_MKDS_2(void);
 /*-------------------------------------------------THE REST-------------------*/
-void *state_none(void);
+static void *state_none(void);
 
 /* Variables -----------------------------------------------------------------*/
 volatile STATE_FUNC_PTR_t state_T = state_none;
@@ -170,129 +167,108 @@ void *state_none()
         case EVENT_MU_COMMAND:  return state_mesuring_u;
         case EVENT_MI_COMMAND:  return state_mesuring_i;
         case EVENT_MD_COMMAND:  return state_mesuring_d;
-/*-------------------------------------------------Ãƒ —-----------------------*/
+/*-------------------------------------------------Ãƒ — 1---------------------*/
         case EVENT_RS_COMMAND:  return state_reboot_MKDS;
         case EVENT_MS_COMMAND:  return state_start_MKDS;
         case EVENT_MT_COMMAND:  return state_mesuring_tzch_MKDS;
         case EVENT_RR_COMMAND:  return state_read_results_MKDS;
+  /*-------------------------------------------------Ãƒ — 2---------------------*/      
+        case EVENT_D1_COMMAND:  return state_data_to_MKDS;
+        case EVENT_D2_COMMAND:  return state_data_to_MKDS;
         
-        case EVENT_D1_COMMAND:  return state_data_to_MKDS_1;
-        case EVENT_D2_COMMAND:  return state_data_to_MKDS_2;
-        case EVENT_R1_COMMAND:  return state_set_MKDS_1_read;
-        case EVENT_W1_COMMAND:  return state_set_MKDS_1_write;
-        case EVENT_R2_COMMAND:  return state_set_MKDS_2_read;
-        case EVENT_W2_COMMAND:  return state_set_MKDS_2_write;
-        case EVENT_G1_COMMAND:  return state_data_from_MKDS_1;
-        case EVENT_G2_COMMAND:  return state_data_from_MKDS_2;
+        case EVENT_R1_COMMAND:  return state_set_MKDS_read;
+        case EVENT_R2_COMMAND:  return state_set_MKDS_read;
+        
+        case EVENT_W1_COMMAND:  return state_set_MKDS_write;
+        case EVENT_W2_COMMAND:  return state_set_MKDS_write;
+        
+        case EVENT_G1_COMMAND:  return state_data_from_MKDS;
+        case EVENT_G2_COMMAND:  return state_data_from_MKDS;
 /*----------------------------------------------------------------------------*/
         default: return state_none;
     }
 }
 
-/*-------------------------------------------------Ãƒ —-----------------------*/
+/*-------------------------------------------------Ãƒ — 1---------------------*/
 static void *state_reboot_MKDS()
 {  
-    spi_reinit(MODULE_MKDS);
-    reboot_MKDS();
+    spi_reinit(MODULE_MKDS_1);
+    MKDS_reboot();
     clean_uart_buffer();
     event = EVENT_NONE;
     return state_none;
 }
 static void *state_start_MKDS()
 {   
-    spi_reinit(MODULE_MKDS);
-    start_MKDS();
+    spi_reinit(MODULE_MKDS_1);
+    MKDS_start();
     clean_uart_buffer();
     event = EVENT_NONE;
     return state_none;
 }
 static void *state_mesuring_tzch_MKDS()
 {  
-    spi_reinit(MODULE_MKDS);
-    mesuring_MKDS();
+    spi_reinit(MODULE_MKDS_1);
+    MKDS_mesuring();
     clean_uart_buffer();
     event = EVENT_NONE;
     return state_none;
 }
 static void *state_read_results_MKDS()
 {   
-    spi_reinit(MODULE_MKDS);
-    read_results_MKDS();
+    spi_reinit(MODULE_MKDS_1);
+    MKDS_read_results();
     clean_uart_buffer();
     event = EVENT_NONE;
     return state_none;
 }
 
+/*-------------------------------------------------Ãƒ — 2---------------------*/
+static void *state_data_to_MKDS()
+{  
+    MODULE CURRENT_MODULE = (event == EVENT_D1_COMMAND) ? MODULE_MKDS_1 : MODULE_MKDS_2;
+    spi_reinit(CURRENT_MODULE);
+    MKDS_data_to_MKDS(CURRENT_MODULE);
+    clean_uart_buffer();
+    event = EVENT_NONE;
+    return state_none;
+}
 
-static void *state_data_to_MKDS_1()
+static void *state_set_MKDS_read()
 {  
-    spi_reinit(MODULE_MKDS);
-    data_to_MKDS_1();
+    MODULE CURRENT_MODULE = (event == EVENT_R1_COMMAND) ? MODULE_MKDS_1 : MODULE_MKDS_2;
+    spi_reinit(CURRENT_MODULE);
+    MKDS_set_MKDS_read(CURRENT_MODULE);
     clean_uart_buffer();
     event = EVENT_NONE;
     return state_none;
 }
-static void *state_data_to_MKDS_2()
+
+static void *state_set_MKDS_write()
 {  
-    spi_reinit(MODULE_MKDS);
-    data_to_MKDS_2();
+    MODULE CURRENT_MODULE = (event == EVENT_W1_COMMAND) ? MODULE_MKDS_1 : MODULE_MKDS_2;
+    spi_reinit(CURRENT_MODULE);
+    MKDS_set_MKDS_write(CURRENT_MODULE);
     clean_uart_buffer();
     event = EVENT_NONE;
     return state_none;
 }
-static void *state_set_MKDS_1_read()
+
+static void *state_data_from_MKDS()
 {  
-    spi_reinit(MODULE_MKDS);
-    set_MKDS_1_read();
+    MODULE CURRENT_MODULE = (event == EVENT_G1_COMMAND) ? MODULE_MKDS_1 : MODULE_MKDS_2;
+    spi_reinit(CURRENT_MODULE);
+    MKDS_data_from_MKDS(CURRENT_MODULE);
     clean_uart_buffer();
     event = EVENT_NONE;
     return state_none;
 }
-static void *state_set_MKDS_1_write()
-{  
-    spi_reinit(MODULE_MKDS);
-    set_MKDS_1_write();
-    clean_uart_buffer();
-    event = EVENT_NONE;
-    return state_none;
-}
-static void *state_set_MKDS_2_read()
-{  
-    spi_reinit(MODULE_MKDS);
-    set_MKDS_2_read();
-    clean_uart_buffer();
-    event = EVENT_NONE;
-    return state_none;
-}
-static void *state_set_MKDS_2_write()
-{  
-    spi_reinit(MODULE_MKDS);
-    set_MKDS_2_write();
-    clean_uart_buffer();
-    event = EVENT_NONE;
-    return state_none;
-}
-static void *state_data_from_MKDS_1()
-{  
-    spi_reinit(MODULE_MKDS);
-    data_from_MKDS_1();
-    clean_uart_buffer();
-    event = EVENT_NONE;
-    return state_none;
-}
-static void *state_data_from_MKDS_2()
-{  
-    spi_reinit(MODULE_MKDS);
-    data_from_MKDS_2();
-    clean_uart_buffer();
-    event = EVENT_NONE;
-    return state_none;
-}
+
 /*-------------------------------------------------Ã ¿—-----------------------*/
 static void *state_setting_u()
 {   
     spi_reinit(MODULE_MKAS);
-    set_U();
+    MKAS_set_U();
     clean_uart_buffer();
     event = EVENT_NONE;
     return state_none;
@@ -301,7 +277,7 @@ static void *state_setting_u()
 static void *state_mesuring_u()
 {   
     spi_reinit(MODULE_MKAS);
-    get_U();
+    MKAS_get_U();
     clean_uart_buffer();
     event = EVENT_NONE;
     return state_none;
@@ -310,7 +286,7 @@ static void *state_mesuring_u()
 static void *state_mesuring_i()
 {    
     spi_reinit(MODULE_MKAS);
-    get_I();
+    MKAS_get_I();
     clean_uart_buffer();
     event = EVENT_NONE;
     return state_none;
@@ -319,7 +295,7 @@ static void *state_mesuring_i()
 static void *state_mesuring_d()
 {   
     spi_reinit(MODULE_MKAS);
-    get_Doza();
+    MKAS_get_Doza();
     clean_uart_buffer();
     event = EVENT_NONE;
     return state_none;

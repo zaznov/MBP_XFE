@@ -18,9 +18,12 @@
 
 /* Variables -----------------------------------------------------------------*/
 char Gotten_command[4] = "000";                                                 // оставляем RS_command[4] под 0x00 (нуль-терминатора) для сравнения в strcmp
+extern volatile bool ADC_Ready;                                              
+extern  uint32_t ticks_Wert;
+
 /* Functions -----------------------------------------------------------------*/
 
-void INT_UART0_Handler(void)  
+void INT_UART0_Handler()  
 {
     if(UART_GetITStatusMasked(MDR_UART0, UART_IT_RX) == SET)                    //Если активен бит прерывания по приему
     {  
@@ -28,7 +31,7 @@ void INT_UART0_Handler(void)
         {
                 while (UART_GetFlagStatus (MDR_UART0, UART_FLAG_RXFF)!= SET);
             Gotten_command[i] = UART_ReceiveData(MDR_UART0);  
-            if(is_correct_byte(Gotten_command[i]))                                         // Если пришедший байт корректен  
+            if(is_correct_byte(&Gotten_command[i]))                                         // Если пришедший байт корректен  
             {
                 if (Gotten_command[i] == 0x0A) 
                 {
@@ -54,7 +57,7 @@ void IRQ_PORTB_Handler()
 }
 
 
-void SysTick_Handler(void)
+void SysTick_Handler()
 {
     ticks_Wert++;
 } 

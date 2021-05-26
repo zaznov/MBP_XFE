@@ -11,8 +11,17 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "my_assert.h"
+
 /* Defines -------------------------------------------------------------------*/ 
+
+
+/* Variables -----------------------------------------------------------------*/
+uint32_t SystemCoreClock = 8000000;
+extern STATE_FUNC_PTR_t state_T;
+
+/* Functions -----------------------------------------------------------------*/
+static void pin_init(void);
+static void mcu_perif_init(void);
 
 int main(void)
 {     
@@ -26,7 +35,7 @@ int main(void)
 
 
 
-void mcu_perif_init()
+static void mcu_perif_init()
 {
 	POR_disable();                                                              /* Disable Power-on-Reset control. Hold the RESET button down until operation complete */
 	CLKCTRL_DeInit();                                                           /* Set CLKCTRL to default */
@@ -60,7 +69,7 @@ void mcu_perif_init()
     NVIC_SetPriority(SysTick_IRQn, 1);                                          // Установить приоритет EXTI0        
 }
 
-void pin_init()
+static void pin_init()
 {
  
     PORT_InitTypeDef GPIO_user_ini;

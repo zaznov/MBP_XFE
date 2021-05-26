@@ -15,7 +15,6 @@
 #define __XFE_UART_H
 
 /* Includes ------------------------------------------------------------------*/  
-#include "stdbool.h"
 #include "mdr32f8_uart.h"               // Keil::Drivers:UART
 #include "mdr32f8_port.h"               // Keil::Drivers:PORT
 #include "mdr32f8_clkctrl.h"            // Keil::Drivers:CLKCTRL
@@ -31,11 +30,7 @@
 /* Functions -----------------------------------------------------------------*/
 void uart_init(uint32_t MY_UART_CLKSRC);
 void uart_send_data(uint16_t Data);
-void uart_send_confirmation_command(char command);
-bool is_correct_byte(char byte);
-bool is_HEX_byte(char byte);
-
-
+void uart_send_confirmation_command(const char command);
 
 #endif /* __XFE_UART_H */
 

@@ -17,12 +17,12 @@
 #include "mdr32f8_it.h"                 // 
 #include "Uart.h"
 #include "state_machine.h"
-
+#include "logic.h"
+#include "stdbool.h"
 /* defines -------------------------------------------------------------------*/  
 
 /* Variables -----------------------------------------------------------------*/
-extern volatile _Bool ADC_Ready;                                              
-extern  uint32_t ticks_Wert;
+
 
 /* Functions -----------------------------------------------------------------*/
 

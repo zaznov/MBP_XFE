@@ -20,8 +20,7 @@
 /* Defines -------------------------------------------------------------------*/ 
 
 /* Variables -----------------------------------------------------------------*/
-const static char Permissible_value[26] = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F', 'G', 'I','M','O','R','S','T','U','W','\n'};  // 0x10 - означает символ Enter. Список разрешенных символов.
-    
+   
 /* Functions -----------------------------------------------------------------*/
 
 
@@ -44,30 +43,7 @@ void uart_init(uint32_t MY_UART_CLKSRC)
     NVIC_EnableIRQ(UART0_IRQn);                                                 //Включить общее прерывание по UART 0
 }
 
-
-bool is_correct_byte(char byte)                                     // inline - место вызова функции при компиляции просто разворачивается в ее код. 
-{
-    for(int i = 0; i < 26; i++)
-    {
-        if (Permissible_value[i] == byte) return true;
-        if (i == 25) 
-        {
-            return false;
-        }
-    }
-    return false;
-}
-bool is_HEX_byte(char byte)                                               // inline - место вызова функции при компиляции просто разворачивается в ее код. 
-{
-    for(int i = 0; i <= 0x0F; i++)
-    {
-        if (Permissible_value[i] == byte || byte == 0x0A) return true;
-    }
-    return false;
-}
-
-
-void uart_send_confirmation_command(char command)                               // Функция подтверждения принятия команды
+void uart_send_confirmation_command(const char command)                               // Функция подтверждения принятия команды
 {
     uint16_t Data = 0;
     switch(command)
@@ -116,7 +92,7 @@ void uart_send_data(uint16_t Data)
     PORT_SetBits(PORTE, PORT_Pin_23);                                           // Включаем передачу по UART на драйвер RS-485
     PORT_SetBits(PORTE, PORT_Pin_22);                                           // на плате
     while (UART_GetFlagStatus (MDR_UART0, UART_FLAG_TXFE)!= SET);               // ждем очищения буферного регистра перечдатчика UART, на всякий случай :)
-    UART_SendData(MDR_UART0, Data);
+        UART_SendData(MDR_UART0, Data);
     while (UART_GetFlagStatus (MDR_UART0, UART_FLAG_BUSY)== SET);               // ждем окончания передачи данынх в линии UART
     PORT_ResetBits(PORTE, PORT_Pin_23);                                         // Включаем прием по UART на драйвер RS-485
     PORT_ResetBits(PORTE, PORT_Pin_22);                                         // на плате

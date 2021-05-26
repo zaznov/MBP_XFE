@@ -18,10 +18,12 @@
 #include "MDR1986VE8T.h"
 #include "my_assert.h"
 #include <string.h>
+#include "stdbool.h"
 /* defines -------------------------------------------------------------------*/  
 
 typedef enum{
-    MODULE_MKDS,
+    MODULE_MKDS_1,
+    MODULE_MKDS_2,
     MODULE_MKAS,
 }MODULE;
 
@@ -29,7 +31,15 @@ typedef enum{
 
 /* Functions -----------------------------------------------------------------*/
 void clean_uart_buffer(void);
-void change_into_HEX(uint8_t *data, MODULE MODULE_name);
+void change_from_HEX(uint8_t *data, MODULE MODULE_name);
+void change_to_HEX(uint8_t *data);
+bool is_correct_byte(const char *byte);
+bool is_HEX_byte(const char * byte);
+int  invert_bit_order(uint8_t x);
+void swap(uint16_t* a, uint16_t* b);
+void bubble_sort(uint16_t* my_arry, uint8_t lenth);
+
+
 #endif /* __LOGIC_H_ */
 
 /************************* 2020 Zaznov NIIKP ***********************************

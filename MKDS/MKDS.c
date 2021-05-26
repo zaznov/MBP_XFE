@@ -14,115 +14,38 @@
   */
 /* Includes ------------------------------------------------------------------*/
 #include "MKDS.h"
-#include "Uart.h"
+
 /* Defines -------------------------------------------------------------------*/ 
 
 /* Variables -----------------------------------------------------------------*/
-static char MKDS_data[48] = {0};
-static uint8_t data_from_MKDS[16] = {2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2};
-uint8_t result_from_MKDS = 1;
+static char     data_to_MKDS[48] = {0};
+static uint8_t  data_from_MKDS[16] = {0};
+static uint8_t  result_from_MKDS = 1;
+
 /* Functions -----------------------------------------------------------------*/
-
-/*-------------------------------------------------МКДС 1---------------------*/
-void reboot_MKDS(void)
-{
-    uart_send_confirmation_command('R');
-    SSP_SendData_MKDS_1(MDR_SSP0, 0x8000);
-    SSP_SendData_MKDS_1(MDR_SSP0, 0x0000);   
-}
-void start_MKDS(void)
-{
-    uart_send_confirmation_command('M');
-    SSP_SendData_MKDS_1(MDR_SSP0, 0x2000);
-    SSP_SendData_MKDS_1(MDR_SSP0, 0x0000);   
-}
-void mesuring_MKDS(void)
-{
-    uart_send_confirmation_command('T');  
-    SSP_SendData_MKDS_1(MDR_SSP0, 0x6000);
-    SSP_SendData_MKDS_1(MDR_SSP0, 0x4000);   
-}
-void read_results_MKDS(void)
-{
-    uart_send_confirmation_command('O');
-    
-    uint16_t PLIS_result_1b  = 0x00;   
-    uint16_t PLIS_result_2b  = 0x00; 
-    PLIS_result_1b = SSP_ReceiveData_MKDS_1(MDR_SSP0);
-    PLIS_result_2b = SSP_ReceiveData_MKDS_1(MDR_SSP0);
-    uart_send_data(PLIS_result_1b);                                      
-    uart_send_data(PLIS_result_2b);                                      
-    uart_send_data(0x0A);
-}
-/*-------------------------------------------------МКДС 2---------------------*/
-void data_to_MKDS_1(void){
-    receive_data_to_MKDS();
-    send_data_to_MKDS_1();
-}
-void data_to_MKDS_2(void){
-    receive_data_to_MKDS();
-    send_data_to_MKDS_2();
-}
-void set_MKDS_1_read(void){
-    SSP_SendData_MKDS_1(MDR_SSP0, 0x5000);
-    SSP_SendData_MKDS_1(MDR_SSP0, 0x5100);
-    SSP_SendData_MKDS_1(MDR_SSP0, 0x5200);
-    SSP_SendData_MKDS_1(MDR_SSP0, 0x5300);
-}
-void set_MKDS_1_write(void){
-    SSP_SendData_MKDS_1(MDR_SSP0, 0x5055);
-    SSP_SendData_MKDS_1(MDR_SSP0, 0x5155);
-    SSP_SendData_MKDS_1(MDR_SSP0, 0x5255);
-    SSP_SendData_MKDS_1(MDR_SSP0, 0x5355);
-}
-void set_MKDS_2_read(void){
-    SSP_SendData_MKDS_2(MDR_SSP0, 0x5000);
-    SSP_SendData_MKDS_2(MDR_SSP0, 0x5100);
-    SSP_SendData_MKDS_2(MDR_SSP0, 0x5200);
-    SSP_SendData_MKDS_2(MDR_SSP0, 0x5300);
-}
-void set_MKDS_2_write(void){
-    SSP_SendData_MKDS_2(MDR_SSP0, 0x5055);
-    SSP_SendData_MKDS_2(MDR_SSP0, 0x5155);
-    SSP_SendData_MKDS_2(MDR_SSP0, 0x5255);
-    SSP_SendData_MKDS_2(MDR_SSP0, 0x5355);
-}
-void set_MKDS_1_disable(void){
-    SSP_SendData_MKDS_2(MDR_SSP0, 0x50AA);
-    SSP_SendData_MKDS_2(MDR_SSP0, 0x51AA);
-    SSP_SendData_MKDS_2(MDR_SSP0, 0x52AA);
-    SSP_SendData_MKDS_2(MDR_SSP0, 0x53AA);
-}
-void set_MKDS_2_disable(void){
-    SSP_SendData_MKDS_2(MDR_SSP0, 0x50AA);
-    SSP_SendData_MKDS_2(MDR_SSP0, 0x51AA);
-    SSP_SendData_MKDS_2(MDR_SSP0, 0x52AA);
-    SSP_SendData_MKDS_2(MDR_SSP0, 0x53AA);
-}
-void data_from_MKDS_1(void){
-    receive_data_from_MKDS_1();
-    send_data_to_XFE();
-}
-void data_from_MKDS_2(void){
-    //receive_data_from_MKDS_2();
-    //send_data_to_XFE();
-}
+static void receive_data_from_MUI(void);
+static void send_data_to_MKDS(MODULE MODULE_NAME);
+static void receive_data_from_MKDS(MODULE MODULE_NAME);
+static void send_data_to_MUI(void);
+static void SPI_SendData_to_MKDS(MODULE MODULE_NAME, uint16_t Data);
+static uint8_t get_chanal_results_MKDS(MODULE MODULE_NAME, uint16_t chanal_number);
+static uint16_t SPI_ReceiveData_from_MKDS(MODULE MODULE_NAME);
 
 
 
-
-static void receive_data_to_MKDS(void)
+/*-------------------------------------------------local-----------------------*/
+static void receive_data_from_MUI(void)
 {
     UART_ITConfig(MDR_UART0, UART_IT_RX, DISABLE);                              //Выключить прерывание по приему  
     char data;
-    int counter_data = 0;
-    for(int i = 0; i < 48; i++)
+    uint8_t counter_data = 0;
+    for(uint8_t i = 0; i < 48; i++)
     {
             while (UART_GetFlagStatus (MDR_UART0, UART_FLAG_RXFF)!= SET);
         data = UART_ReceiveData(MDR_UART0);
-        if(is_HEX_byte(data))                                                   // Если пришедший байт HEX  
+        if(is_HEX_byte(&data))                                                   // Если пришедший байт HEX  
         {
-            MKDS_data[counter_data++] = data; 
+            data_to_MKDS[counter_data++] = data; 
 
         }
         else                                                                    // Если байт не HEX
@@ -132,155 +55,173 @@ static void receive_data_to_MKDS(void)
         }
     }
     
-    convert_data_to_MKDS();
+    change_from_HEX((uint8_t *)data_to_MKDS, MODULE_MKDS_1);                       // Меняем значения для передачи в ЦАП из Аски в Хекс 
     UART_ITConfig(MDR_UART0, UART_IT_RX, ENABLE);                               //Включить прерывание по приему
 }
 
-static inline void convert_data_to_MKDS(void)
-{
-            change_into_HEX((uint8_t *)MKDS_data, MODULE_MKDS);                       // Меняем значения для передачи в ЦАП из Аски в Хекс 
-}
-static void send_data_to_MKDS_1(void)
+
+static void send_data_to_MKDS(MODULE MODULE_NAME)
 { 
     uint8_t chanal_number = 0x40;
     uint8_t data = 0;
     for(int i = 0; i < 48; i = i + 3)
     {
-        data = ((MKDS_data[i] << 4) | MKDS_data[i + 1]);
-        SSP_SendData_MKDS_1(MDR_SSP0, (chanal_number << 8) | data);
-        chanal_number++;
-    }
-}
-
-static void send_data_to_MKDS_2(void)
-{
-    int chanal_number = 0;
-    for(int i = 0; i < 48; i = i + 3){
-        SSP_SendData_MKDS_1(MDR_SSP0, 0x40+chanal_number);
-        SSP_SendData_MKDS_1(MDR_SSP0, ((MKDS_data[i] << 4) | MKDS_data[i + 1]));
+        data = ((data_to_MKDS[i] << 4) | data_to_MKDS[i + 1]);
+        SPI_SendData_to_MKDS(MODULE_NAME, (chanal_number << 8) | data);
         chanal_number++;
     }
 }
 
 
-
-static void receive_data_from_MKDS_1(void)
+static void receive_data_from_MKDS(MODULE MODULE_NAME)
 {
-    int counter = 0;
-    for(int chanal = 0x000; chanal <= 0xF00; chanal += 0x100)
+    uint32_t counter = 0;
+    for(uint32_t chanal = 0x000; chanal <= 0xF00; chanal += 0x100)
     {
-        data_from_MKDS[counter++] = get_chanal_results_MKDS_1(chanal);
+        data_from_MKDS[counter++] = get_chanal_results_MKDS(MODULE_NAME,chanal);
     }
 }
 
-static void send_data_to_XFE(void)
+static void send_data_to_MUI(void)
 {
     uart_send_confirmation_command('G');
-    int counter = 0;
-    for(int chanal = 0x000; chanal <= 0xF00; chanal += 0x100)
+    uint32_t counter = 0;
+    for(uint32_t chanal = 0x000; chanal <= 0xF00; chanal += 0x100)
     {
         uart_send_data(data_from_MKDS[counter++]);
     }
     //uart_send_data(0x0A);
 }
 
-
-
-
-/*-------------------------------------------------REST-----------------------*/
-void SSP_SendData_MKDS_1(MDR_SSP_TypeDef* SSPx, uint16_t Data)
+static void SPI_SendData_to_MKDS(MODULE MODULE_NAME, uint16_t Data)
 {
-    my_assert_param(IS_SSP_ALL_PERIPH(SSPx));
     while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_TFE) == RESET);
-    CS_MKDS_1_DOWN();
-        SSP_SendData(SSPx, Data >> 8);
-            while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_RNE) == RESET);
-        SSP_ReceiveData(MDR_SSP0);
-            while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_TFE) == RESET);
-        SSP_SendData(SSPx, (uint8_t)Data);
-            while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_RNE) == RESET);
-        result_from_MKDS = SSP_ReceiveData(MDR_SSP0);
-            while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_BSY) == SET);
-    CS_MKDS_1_UP();
+    (MODULE_NAME == MODULE_MKDS_1) ? CS_MKDS_1_DOWN() : CS_MKDS_2_DOWN();
+            SSP_SendData(MDR_SSP0, Data >> 8);
+                while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_RNE) == RESET);
+            SSP_ReceiveData(MDR_SSP0);
+                while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_TFE) == RESET);
+            SSP_SendData(MDR_SSP0, (uint8_t)Data);
+                while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_RNE) == RESET);
+            result_from_MKDS = SSP_ReceiveData(MDR_SSP0);
+                while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_BSY) == SET);
+    (MODULE_NAME == MODULE_MKDS_1) ? CS_MKDS_1_UP() : CS_MKDS_2_UP();
+
 }
 
 
 
-uint8_t get_chanal_results_MKDS_1(uint16_t chanal_number)
+static uint8_t get_chanal_results_MKDS(MODULE MODULE_NAME, uint16_t chanal_number)
 {
-        while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_TFE) == RESET);
-    CS_MKDS_1_DOWN();
-        SSP_SendData(MDR_SSP0, chanal_number >> 8);
-            while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_RNE) == RESET);
-        SSP_ReceiveData(MDR_SSP0);
-            while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_TFE) == RESET);
-        SSP_SendData(MDR_SSP0, (uint8_t)chanal_number);
-            while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_RNE) == RESET);
-        SSP_ReceiveData(MDR_SSP0);
-            while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_BSY) == SET);
-    CS_MKDS_1_UP();
-    
-    
-        while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_TFE) == RESET);
-    CS_MKDS_1_DOWN();
-        SSP_SendData(MDR_SSP0, 0x00);
-            while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_RNE) == RESET);
-        SSP_ReceiveData(MDR_SSP0);
-            while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_TFE) == RESET);
-        SSP_SendData(MDR_SSP0, 0x00);
-            while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_RNE) == RESET);
-        result_from_MKDS = SSP_ReceiveData(MDR_SSP0);
-            while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_BSY) == SET);
-    CS_MKDS_1_UP();
-    return result_from_MKDS;
-}
 
-
-uint16_t SSP_ReceiveData_MKDS_1(MDR_SSP_TypeDef* SSPx)
-{
-    my_assert_param(IS_SSP_ALL_PERIPH(SSPx));
-    uint16_t PLIS_result = 0x00;
-    
-        while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_TFE) == RESET);
-    CS_MKDS_1_DOWN();
-        SSP_SendData(MDR_SSP0, 0x00);
-            while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_RNE) == RESET);
-        PLIS_result = SSP_ReceiveData(MDR_SSP0); 
-            while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_BSY) == SET);
-    CS_MKDS_1_UP();    
-    return (PLIS_result);
-}
-
-void SSP_SendData_MKDS_2(MDR_SSP_TypeDef* SSPx, uint16_t Data)
-{
-    my_assert_param(IS_SSP_ALL_PERIPH(SSPx));
     while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_TFE) == RESET);
-    CS_MKDS_2_DOWN();
-        SSP_SendData(SSPx, Data >> 8);
-            while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_RNE) == RESET);
-        SSP_ReceiveData(MDR_SSP0);
+        (MODULE_NAME == MODULE_MKDS_1) ? CS_MKDS_1_DOWN() : CS_MKDS_2_DOWN();
+            SSP_SendData(MDR_SSP0, chanal_number >> 8);
+                while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_RNE) == RESET);
+            SSP_ReceiveData(MDR_SSP0);
+                while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_TFE) == RESET);
+            SSP_SendData(MDR_SSP0, (uint8_t)chanal_number);
+                while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_RNE) == RESET);
+            SSP_ReceiveData(MDR_SSP0);
+                while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_BSY) == SET);
+        (MODULE_NAME == MODULE_MKDS_1) ? CS_MKDS_1_UP() : CS_MKDS_2_UP();
+        
+        
             while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_TFE) == RESET);
-        SSP_SendData(SSPx, (uint8_t)Data);
-            while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_RNE) == RESET);
-        SSP_ReceiveData(MDR_SSP0);
-            while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_BSY) == SET);
-    CS_MKDS_2_UP();
+        (MODULE_NAME == MODULE_MKDS_1) ? CS_MKDS_1_DOWN() : CS_MKDS_2_DOWN();
+            SSP_SendData(MDR_SSP0, 0x00);
+                while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_RNE) == RESET);
+            SSP_ReceiveData(MDR_SSP0);
+                while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_TFE) == RESET);
+            SSP_SendData(MDR_SSP0, 0x00);
+                while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_RNE) == RESET);
+            result_from_MKDS = SSP_ReceiveData(MDR_SSP0);
+                while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_BSY) == SET);
+        (MODULE_NAME == MODULE_MKDS_1) ? CS_MKDS_1_UP() : CS_MKDS_2_UP();
+        return result_from_MKDS;
 }
 
-uint16_t SSP_ReceiveData_MKDS_2(MDR_SSP_TypeDef* SSPx)
+
+static uint16_t SPI_ReceiveData_from_MKDS(MODULE MODULE_NAME)
 {
-    my_assert_param(IS_SSP_ALL_PERIPH(SSPx));
-    
-    uint16_t PLIS_result = 0x00;
-    while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_TFE) == RESET);
-    CS_MKDS_2_DOWN();
-    SSP_SendData(MDR_SSP0, 0x00);
-    while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_RNE) == RESET);
-    PLIS_result = SSP_ReceiveData(MDR_SSP0); 
-    while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_BSY) == SET);
-    CS_MKDS_2_UP();    
-    return (PLIS_result);
+    uint16_t PLIS_result = 0x00;  
+            while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_TFE) == RESET);
+    (MODULE_NAME == MODULE_MKDS_1) ? CS_MKDS_1_DOWN() : CS_MKDS_2_DOWN();
+            SSP_SendData(MDR_SSP0, 0x00);
+            while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_RNE) == RESET);
+            PLIS_result = SSP_ReceiveData(MDR_SSP0); 
+            while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_BSY) == SET);
+    (MODULE_NAME == MODULE_MKDS_1) ? CS_MKDS_1_UP() : CS_MKDS_2_UP();    
+            return (PLIS_result); 
 }
+
+
+/*-------------------------------------------------МКДС 1---------------------*/
+void MKDS_reboot(void)
+{
+    uart_send_confirmation_command('R');
+    SPI_SendData_to_MKDS(MODULE_MKDS_1, 0x8000);
+    SPI_SendData_to_MKDS(MODULE_MKDS_1, 0x0000);   
+}
+void MKDS_start(void)
+{
+    uart_send_confirmation_command('M');
+    SPI_SendData_to_MKDS(MODULE_MKDS_1, 0x2000);
+    SPI_SendData_to_MKDS(MODULE_MKDS_1, 0x0000);   
+}
+void MKDS_mesuring(void)
+{
+    uart_send_confirmation_command('T');  
+    SPI_SendData_to_MKDS(MODULE_MKDS_1, 0x6000);
+    SPI_SendData_to_MKDS(MODULE_MKDS_1, 0x4000);   
+}
+void MKDS_read_results(void)
+{
+    uart_send_confirmation_command('O');
+    uint16_t PLIS_result[2]  = {0};   
+    PLIS_result[0] = SPI_ReceiveData_from_MKDS(MODULE_MKDS_1);
+    PLIS_result[1] = SPI_ReceiveData_from_MKDS(MODULE_MKDS_1);
+    uart_send_data(PLIS_result[0]);                                      
+    uart_send_data(PLIS_result[1]);                                      
+    uart_send_data(0x0A);
+}
+/*-------------------------------------------------МКДС 2---------------------*/
+void MKDS_data_to_MKDS(MODULE MODULE_NAME){
+    receive_data_from_MUI();
+    send_data_to_MKDS(MODULE_NAME);
+}
+
+
+void MKDS_set_MKDS_read(MODULE MODULE_NAME){
+    SPI_SendData_to_MKDS(MODULE_NAME, 0x5000);
+    SPI_SendData_to_MKDS(MODULE_NAME, 0x5100);
+    SPI_SendData_to_MKDS(MODULE_NAME, 0x5200);
+    SPI_SendData_to_MKDS(MODULE_NAME, 0x5300);
+}
+
+void MKDS_set_MKDS_write(MODULE MODULE_NAME){
+    SPI_SendData_to_MKDS(MODULE_NAME, 0x5055);
+    SPI_SendData_to_MKDS(MODULE_NAME, 0x5155);
+    SPI_SendData_to_MKDS(MODULE_NAME, 0x5255);
+    SPI_SendData_to_MKDS(MODULE_NAME, 0x5355);
+}
+
+void MKDS_set_MKDS_disable(MODULE MODULE_NAME){
+    SPI_SendData_to_MKDS(MODULE_NAME, 0x50AA);
+    SPI_SendData_to_MKDS(MODULE_NAME, 0x51AA);
+    SPI_SendData_to_MKDS(MODULE_NAME, 0x52AA);
+    SPI_SendData_to_MKDS(MODULE_NAME, 0x53AA);
+}
+
+
+
+void MKDS_data_from_MKDS(MODULE MODULE_NAME){
+    receive_data_from_MKDS(MODULE_NAME);
+    send_data_to_MUI();
+}
+
+
+
 
 /************************* 2020 Zaznov NIIKP ***********************************
 *

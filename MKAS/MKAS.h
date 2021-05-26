@@ -22,30 +22,15 @@
 #include "logic.h"
 
 /* defines -------------------------------------------------------------------*/  
-#define Start_ADC   PORT_Pin_27                                                 // Start ADC
-#define A3          PORT_Pin_18                                                 //CS
-#define A2          PORT_Pin_22
-#define A1          PORT_Pin_21
-#define A0          PORT_Pin_20
-#define Sel1        PORT_Pin_28
-#define Sel2        PORT_Pin_29
-#define Sel3        PORT_Pin_30
-#define Sel4        PORT_Pin_31
+
 
 /* Variables -----------------------------------------------------------------*/
 
 /* Functions -----------------------------------------------------------------*/
-void data_response_ADC(void);
-void set_U(void);
-void set_U_local(void);
-void get_U(void);
-void get_I(void);
-void get_Doza(void);
-void MKAS_init(void);
-static uint16_t adc_read(void);
-static void swap(uint16_t* a, uint16_t* b);
-static void bubble_sort(uint16_t* my_arry);
-
+void MKAS_set_U(void);
+void MKAS_get_U(void);
+void MKAS_get_I(void);
+void MKAS_get_Doza(void);
 
 #endif /* __MKAS_H_ */
 

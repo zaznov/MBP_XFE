@@ -19,10 +19,8 @@
 #include "mdr32f8_config.h"             // Keil::Drivers:CONFIG
 #include "mdr32f8_clkctrl.h"            // Keil::Drivers:CLKCTRL
 #include "mdr32f8_port.h"               // Keil::Drivers:PORT
-
 #include "mdr32f8_ssp.h"
 #include "core_cm4.h"
-//#include <assert.h>
 
 /* My Includes ---------------------------------------------------------------*/
 #include "Uart.h"
@@ -30,7 +28,7 @@
 #include "state_machine.h"
 #include "my_assert.h"
 #include "wdt.h"
-
+#include "my_assert.h"
 /* Defines -------------------------------------------------------------------*/ 
 typedef enum{
     HSE0_ON     =   (uint32_t)0x08000000,
@@ -54,17 +52,14 @@ typedef enum{
 
 
 /* Variables -----------------------------------------------------------------*/
-extern STATE_FUNC_PTR_t state_T;
-
 CLK         CURRENT_CLK         = HSE0_ON;
 CLK_RDY     CURRENT_CLK_RDY     = HSE0_RDY;
 CLKCTRL_MAX CURRENT_CLKCTRL_MAX = HSE0div1;
 UART_CLK    CURRENT_UART_CLK    = UART_HSE0;
 
-uint32_t SystemCoreClock = 8000000;
+
 /* Functions -----------------------------------------------------------------*/
-void pin_init(void);
-void mcu_perif_init(void);
+
 
 #endif /* __XFE_MAIN_H */
 /******************* (C) COPYRIGHT 2020 NIIKP *********************************
