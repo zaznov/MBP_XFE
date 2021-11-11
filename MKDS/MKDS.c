@@ -160,20 +160,20 @@ static uint16_t SPI_ReceiveData_from_MKDS(MODULE MODULE_NAME)
 void MKDS_reboot(void)
 {
     uart_send_confirmation_command('R');
-    SPI_SendData_to_MKDS(MODULE_MKDS_1, 0x8000);
-    SPI_SendData_to_MKDS(MODULE_MKDS_1, 0x0000);   
+    SPI_SendData_to_MKDS(MODULE_MKDS_1, 0x9C00);
+    SPI_SendData_to_MKDS(MODULE_MKDS_1, 0x1C00);   
 }
 void MKDS_start(void)
 {
     uart_send_confirmation_command('M');
-    SPI_SendData_to_MKDS(MODULE_MKDS_1, 0x2000);
-    SPI_SendData_to_MKDS(MODULE_MKDS_1, 0x0000);   
+    SPI_SendData_to_MKDS(MODULE_MKDS_1, 0x3C00);
+    SPI_SendData_to_MKDS(MODULE_MKDS_1, 0x1C00);   
 }
 void MKDS_mesuring(void)
 {
     uart_send_confirmation_command('T');  
-    SPI_SendData_to_MKDS(MODULE_MKDS_1, 0x6000);
-    SPI_SendData_to_MKDS(MODULE_MKDS_1, 0x4000);   
+    SPI_SendData_to_MKDS(MODULE_MKDS_1, 0x7C00);
+    SPI_SendData_to_MKDS(MODULE_MKDS_1, 0x5C00);   
 }
 void MKDS_read_results(void)
 {

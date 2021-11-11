@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    delays.c
   * @author  Zaznov NIIKP
-  * @version V1.0.1
-  * @date    28/10/2019
+  * @version V3.0.1
+  * @date    28/08/2021
   * @brief   This file provides firmware functions to manage the following 
   *          functionalities of the delays-library of Cortex-M4 family:           
   *           + Delay in milliseconds
@@ -25,7 +25,7 @@ extern uint32_t SystemCoreClock;
 /* Functions -----------------------------------------------------------------*/
 
 /**
-  * @brief  Function creats a delay in milliseconds
+  * @brief  Creats a delay in milliseconds
   * @param  delay_in_mils: delay value in milliseconds.
   * @retval None
   */
@@ -38,7 +38,7 @@ void delay_mls(uint32_t delay_in_mils)
 }   
 
 /**
-  * @brief  Function creats a delay in microseconds
+  * @brief  Creats a delay in microseconds
   * @param  delay_in_mks: delay value in microseconds.
   * @retval None
   */
@@ -58,7 +58,7 @@ void delay_mks(const uint32_t delay_in_mks)
     SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;                                  // Отключить таймер SysTick
 } 
 
-/************************* 2020 Zaznov NIIKP ***********************************
+/**************** (C) COPYRIGHT 2021 Zaznov NIIKP ******************************
 *
 * END OF FILE delays.c */
 

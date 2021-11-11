@@ -2,10 +2,9 @@
   ******************************************************************************
   * @file    handlers.h
   * @author  Zaznov NIIKP
-  * @version V3.0.0
-  * @date    01/05/2021
-  * @brief   This file contains functions prototypes for work with interrupt
-  handlers of stm32f4xx
+  * @version V3.0.1
+  * @date    28/08/2021
+  * @brief   
   ******************************************************************************
   * FILE handlers.h
   */
@@ -28,6 +27,6 @@
 
 #endif /* __HANDLERS_H_ */
 
-/************************* 2020 Zaznov NIIKP ***********************************
+/**************** (C) COPYRIGHT 2021 Zaznov NIIKP ******************************
 *
 * END OF FILE handlers.h */

@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    Spi.h
   * @author  Zaznov NIIKP
-  * @version V3.0.0
-  * @date    01/05/2021
+  * @version V3.0.1
+  * @date    20/08/2021
   * @brief   This file contains all the functions prototypes for work with SPI 
              from XFE project
   ******************************************************************************
@@ -31,7 +31,7 @@
 
 /* Functions -----------------------------------------------------------------*/
 void pin_init_spi(void);
-void spi_init(void);
+void spi_init(uint32_t MY_SPI_CLK_SRC);
 void spi_reinit(MODULE MODULE_NAME);
 
 #endif /* __XFE_SPI_H */

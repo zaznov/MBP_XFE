@@ -43,63 +43,24 @@ static void send_one_byte_from_adc(uint16_t data);
 
 /* ---------------------------------------------------------------------------*/
 
+
+/**
+  * @brief  Checks whether the specified UART flag is set or not.
+  * @param  UARTx: Select the UART or the UART peripheral.
+  *         This parameter can be one of the following values:
+  *         UART0.
+  * @param  UART_FLAG: specifies the flag to check.
+  *         This parameter can be one of the following values:
+  *           @arg UART_FLAG_RI  : nUARTRI line inverted value
+  *           @arg UART_FLAG_TXFE: Transmit buffer is empty flag
+  * @retval None
+  */
 static void send_one_byte_from_adc(uint16_t data)
 { 
     uint8_t data_byte_to_transfer = data&0x0F;
     change_to_HEX(&data_byte_to_transfer);
     uart_send_data(data_byte_to_transfer);
-    
-    /*switch(data&0x0F)
-        {
-            case(0):
-                uart_send_data(0x30);
-                break;
-            case(1):
-                uart_send_data(0x31);
-                break;
-            case(2):
-                uart_send_data(0x32);
-                break;
-            case(3):
-                uart_send_data(0x33);
-                break;
-            case(4):
-                uart_send_data(0x34);
-                break;
-            case(5):
-                uart_send_data(0x35);
-                break;
-            case(6):
-                uart_send_data(0x36);
-                break;
-            case(7):
-                uart_send_data(0x37);
-                break;
-            case(8):
-                uart_send_data(0x38);
-                break;
-            case(9):
-                uart_send_data(0x39);
-                break;
-            case(0x0A):
-                uart_send_data(0x41);
-                break;
-            case(0x0B):
-                uart_send_data(0x42);
-                break;
-            case(0x0C):
-                uart_send_data(0x43);
-                break;
-            case(0x0D):
-                uart_send_data(0x44);
-                break;
-            case(0x0E):
-                uart_send_data(0x45);
-                break;
-            case(0x0F):
-                uart_send_data(0x46);
-                break;          
-        } */
+   
 }
 
 static void data_response_ADC(void (*sort_function)(uint16_t*, uint8_t))
@@ -112,9 +73,9 @@ static void data_response_ADC(void (*sort_function)(uint16_t*, uint8_t))
     sort_function(data_from_adc, ADC_REPETITIONS_NUMBER);
     
     
-    send_one_byte_from_adc(data_from_adc[1] >> 8);
-    send_one_byte_from_adc(data_from_adc[1] >> 4);
-    send_one_byte_from_adc(data_from_adc[1]);
+    send_one_byte_from_adc(data_from_adc[2] >> 8);
+    send_one_byte_from_adc(data_from_adc[2] >> 4);
+    send_one_byte_from_adc(data_from_adc[2]);
     uart_send_data(0x0A);
     ADC_Ready = 0;
     NVIC_EnableIRQ(PORTB_IRQn);
@@ -126,11 +87,11 @@ static uint16_t adc_read(void)
 {
     uint16_t byte1 = 0;
     uint16_t byte2 = 0;
+    PORT_ResetBits(PORTB, A3);
     PORT_SetBits(PORTB, Start_ADC);                                             //Подали команду на Start                                                
-    PORT_ResetBits(PORTB, Start_ADC);                                 
-    //while(!ADC_Ready); 
-    
-    PORT_ResetBits(PORTB, A3);                                                  // Начали считывать данные с АЦП
+    PORT_ResetBits(PORTB, Start_ADC); 
+    while(!ADC_Ready); 
+    delay_mks(10);                                                 							// Начали считывать данные с АЦП
         while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_TFE) == RESET);
         SSP_SendData(MDR_SSP0, 0x33);
         while (SSP_GetFlagStatus(MDR_SSP0, SSP_FLAG_RNE) == RESET);
@@ -142,7 +103,6 @@ static uint16_t adc_read(void)
     PORT_SetBits(PORTB, A3);                                                    // Закончили считывать данные с АЦП
     uint16_t actual = ((byte1 << 4) | (byte2 >> 4));
     return actual;
-    
 }
 
 static void set_U_local(void)
@@ -256,6 +216,9 @@ static void choose_ADC_Chanel(uint16_t Chanel)
             PORT_SetBits(PORTB, Sel3);                                        
             PORT_SetBits(PORTB, Sel4);  
             break;
+        default:
+            uart_send_confirmation_command('E');                                //Возвращаем сообщение об ошибке. 
+            
     }
      delay_mks(50);
 }
@@ -364,15 +327,13 @@ void MKAS_get_I(void)
     NVIC_DisableIRQ(PORTB_IRQn);                                                // Запрещаем прерывания по порту В
 }
 
-void MKAS_get_Doza(void)
+void MKAS_get_single_measure(void)
 {
     UART_ITConfig(MDR_UART0, UART_IT_RX, DISABLE);                              //Выключить прерывание по приему  
     char I_oder_U = 'X'; 
     char G_oder_D = 'X'; 
     char number_chanel = '5';
     uint16_t result_number = 0;
-    
-
     while (UART_GetFlagStatus (MDR_UART0, UART_FLAG_RXFF)!= SET)
             ;
     I_oder_U = UART_ReceiveData(MDR_UART0);
@@ -382,9 +343,7 @@ void MKAS_get_Doza(void)
     while (UART_GetFlagStatus (MDR_UART0, UART_FLAG_RXFF)!= SET)
             ;
     number_chanel = UART_ReceiveData(MDR_UART0);
-    
     UART_ITConfig(MDR_UART0, UART_IT_RX, ENABLE);                               //Включить прерывание по приему
-    
     
     NVIC_EnableIRQ(PORTB_IRQn);                                                 // Разрешим прерывания на порту В                    
     PORT_SetBits(PORTB, A2);                                                    //Выбрали АЦП в целом      
@@ -399,6 +358,10 @@ void MKAS_get_Doza(void)
         {
             result_number = (uint16_t)(number_chanel - 0x30 + 6 + 1);                                            
         }
+        else if(G_oder_D == 'R')
+        {
+            result_number = (uint16_t)(number_chanel - 0x30 + 12 + 1);                                            
+        }
     }
     else if(I_oder_U == 'I')
     {
@@ -411,10 +374,13 @@ void MKAS_get_Doza(void)
         {
             result_number = (uint16_t)(number_chanel - 0x30 + 6 + 1);                                            
         }
+        else if(G_oder_D == 'R')
+        {
+            result_number = (uint16_t)(number_chanel - 0x30 + 12 + 1);                                            
+        }
     }
 
     uart_send_confirmation_command('D');
-    
     choose_ADC_Chanel(result_number);                                           //Выбрали канал number_chanel    
     data_response_ADC(bubble_sort);
     NVIC_DisableIRQ(PORTB_IRQn);                                                // Запрещаем прерывания по порту В

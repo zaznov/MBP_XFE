@@ -4,9 +4,8 @@
   * @author  Zaznov NIIKP
   * @version V1.0.0
   * @date    12/02/2021
-  * @brief   This file contains all the functions prototypes for work with...
-  To view Datasheet visit:
-  https:....
+  * @brief   This file contains all the functions prototypes for work with 
+  * Watch dog Timer driver of Milandr 1986VE8T
   ******************************************************************************
   * FILE wdt.h
   */
@@ -26,7 +25,7 @@ void wdt_rewrite(void);
 void wdt_reinit(void);
 #endif /* __WGT_H_ */
 
-/************************* 2020 Zaznov NIIKP ***********************************
+/**************** (C) COPYRIGHT 2021 Zaznov NIIKP ******************************
 *
 * END OF FILE wdt.h */
 

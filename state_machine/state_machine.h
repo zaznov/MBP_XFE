@@ -19,6 +19,7 @@
 /* Includes ------------------------------------------------------------------*/ 
 #include "MKAS.h"
 #include "MKDS.h"
+#include "status.h"
 #include "spi.h"
 #include "mdr32f8_it.h"                                                         
 #include <string.h>
@@ -44,6 +45,8 @@ typedef enum{
     EVENT_W2_COMMAND,
     EVENT_G1_COMMAND,
     EVENT_G2_COMMAND,
+/*-------------------------------------------------лсх------------------------*/
+    EVENT_ST_COMMAND,
 /*-------------------------------------------------THE REST-------------------*/
     EVENT_NONE,
 }EVENT_t;

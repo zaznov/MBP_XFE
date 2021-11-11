@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    state_machine.c
   * @author  Zaznov NIIKP
-  * @version V3.0.0
-  * @date    01/05/2021
+  * @version V3.0.1
+  * @date    28/08/2021
   * @brief   This file provides firmware functions to manage the following 
   *          functionalities (states) of the state_machine-driver:   
   *                         Analog signals
@@ -49,7 +49,8 @@ static void *state_data_to_MKDS(void);
 static void *state_set_MKDS_read(void);
 static void *state_set_MKDS_write(void);
 static void *state_data_from_MKDS(void);
-
+/*-------------------------------------------------Ã”»------------------------*/
+static void *state_get_status(void);
 /*-------------------------------------------------THE REST-------------------*/
 static void *state_none(void);
 
@@ -78,8 +79,18 @@ static char R2_command[4] = "R2\n";
 static char W2_command[4] = "W2\n";
 static char G1_command[4] = "G1\n";  
 static char G2_command[4] = "G2\n";
+/*-------------------------------------------------Ã”»-----------------------*/
+static char ST_command[4] = "ST\n";  
 
 
+
+/**
+  * @brief  This function is called from INT_UART0_Handler, aftr the whole command 
+  * was recieved from the UART. The function changes the variable event, 
+  * what leads to changing of the state of the device in function state_none().
+  * @param  None
+  * @retval None
+  */
 void change_event()
 {
 /*-------------------------------------------------Ã ¿—-----------------------*/
@@ -149,6 +160,11 @@ void change_event()
         {
             event = EVENT_G2_COMMAND;
         }
+/*-------------------------------------------------Ã”»------------------------*/       
+        else if (strcmp(Gotten_command, ST_command) == 0)
+        {
+            event = EVENT_ST_COMMAND;
+        }
 /*----------------------------------------------------------------------------*/
         else
         {
@@ -156,6 +172,30 @@ void change_event()
         }
 }
 
+
+
+/**
+  * @brief  This function is called most of the time in main infinite loop, 
+  * wating for the variable event to be changed, and then returns pointer on 
+  * necessary for execution function.
+  * @param  None
+  * @retval Returns pointer on void value. 
+  *         This parameter can be one of the following values:
+  *           @state state_none  
+  *           @state state_setting_u
+  *           @state state_mesuring_u  
+  *           @state state_mesuring_i
+  *           @state state_mesuring_d  
+  *           @state state_reboot_MKDS
+  *           @state state_start_MKDS  
+  *           @state state_mesuring_tzch_MKDS
+  *           @state state_read_results_MKDS  
+  *           @state state_data_to_MKDS
+  *           @state state_set_MKDS_read
+  *           @state state_set_MKDS_write
+  *           @state state_data_from_MKDS
+  *           @state state_get_status
+  */
 void *state_none()
 {   
     switch (event)
@@ -172,7 +212,7 @@ void *state_none()
         case EVENT_MS_COMMAND:  return state_start_MKDS;
         case EVENT_MT_COMMAND:  return state_mesuring_tzch_MKDS;
         case EVENT_RR_COMMAND:  return state_read_results_MKDS;
-  /*-------------------------------------------------Ãƒ — 2---------------------*/      
+/*-------------------------------------------------Ãƒ — 2---------------------*/      
         case EVENT_D1_COMMAND:  return state_data_to_MKDS;
         case EVENT_D2_COMMAND:  return state_data_to_MKDS;
         
@@ -184,6 +224,8 @@ void *state_none()
         
         case EVENT_G1_COMMAND:  return state_data_from_MKDS;
         case EVENT_G2_COMMAND:  return state_data_from_MKDS;
+/*-------------------------------------------------Ã”»------------------------*/      
+        case EVENT_ST_COMMAND:  return state_get_status;
 /*----------------------------------------------------------------------------*/
         default: return state_none;
     }
@@ -295,7 +337,17 @@ static void *state_mesuring_i()
 static void *state_mesuring_d()
 {   
     spi_reinit(MODULE_MKAS);
-    MKAS_get_Doza();
+    MKAS_get_single_measure();
+    clean_uart_buffer();
+    event = EVENT_NONE;
+    return state_none;
+}
+
+
+/*-------------------------------------------------Ã”»-----------------------*/
+static void *state_get_status()
+{   
+    status_get_status();
     clean_uart_buffer();
     event = EVENT_NONE;
     return state_none;
@@ -303,7 +355,6 @@ static void *state_mesuring_d()
 
 
 
-
-/************************* 2020 Zaznov NIIKP ***********************************
+/**************** (C) COPYRIGHT 2021 Zaznov NIIKP ******************************
 *
 * END OF FILE state_machine.c */

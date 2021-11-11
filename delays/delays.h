@@ -26,7 +26,7 @@ void delay_mks(uint32_t delay_in_mils);
 
 #endif /* __DELAY_H_ */
 
-/************************* 2020 Zaznov NIIKP ***********************************
+/**************** (C) COPYRIGHT 2021 Zaznov NIIKP ******************************
 *
 * END OF FILE delays.h */
 

@@ -30,7 +30,7 @@
 void MKAS_set_U(void);
 void MKAS_get_U(void);
 void MKAS_get_I(void);
-void MKAS_get_Doza(void);
+void MKAS_get_single_measure(void);
 
 #endif /* __MKAS_H_ */
 

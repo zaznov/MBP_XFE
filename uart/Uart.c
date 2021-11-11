@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    Uart.c
   * @author  Zaznov NIIKP
-  * @version V3.0.0
-  * @date    01/05/2021
+  * @version V3.0.1
+  * @date    27/08/2021
   * @brief   This file provides all the functions prototypes for work with UART 
              from XFE project
   ******************************************************************************
@@ -23,16 +23,24 @@
    
 /* Functions -----------------------------------------------------------------*/
 
-
-void uart_init(uint32_t MY_UART_CLKSRC)
+/**
+  * @brief  UART initialisation.
+  * @param  MY_UART_CLK_SRC: Select the clock source for the UART peripheral.
+  *         This parameter can be one of the following values:
+  *           @arg UART_HSE0    : when HSE0 is clocking source.
+  *           @arg UART_HSE1    : when HSE1 is clocking source.
+  * @retval None
+  */
+void uart_init(uint32_t MY_UART_CLK_SRC)
 {
     CLKCTRL_PER1_CLKcmd(CLKCTRL_PER1_CLK_MDR_UART0_EN, ENABLE);                 // Вкл. тактирование контроллера UART0
-    UART_CLK_en(MDR_UART0, MY_UART_CLKSRC, UART_CLKdiv1);                     // Настройка тактирование контроллера UART0
+    UART_CLK_en(MDR_UART0, MY_UART_CLK_SRC, UART_CLKdiv1);                     // Настройка тактирование контроллера UART0
     
     UART_InitTypeDef uart_user_ini;
     uart_user_ini.UART_BaudRate             = 19200;                             // Скорость передачи данных
     uart_user_ini.UART_FIFOMode             = UART_FIFO_OFF;                    // Включение/отключение буфера
-    uart_user_ini.UART_HardwareFlowControl  = (UART_HardwareFlowControl_RXE | UART_HardwareFlowControl_TXE);    // Аппаратный контроль за передачей и приемом данных. Особенность(!!) - включает RX and TX !!
+    uart_user_ini.UART_HardwareFlowControl  = (UART_HardwareFlowControl_RXE 
+                                              | UART_HardwareFlowControl_TXE);    // Аппаратный контроль за передачей и приемом данных. Особенность(!!) - включает RX and TX !!
     uart_user_ini.UART_Parity               = UART_Parity_No;                   // Контроль четности
     uart_user_ini.UART_StopBits             = UART_StopBits1;                   // Количество STOP-битов
     uart_user_ini.UART_WordLength           = UART_WordLength8b;                // Количество битов данных в сообщении
@@ -42,8 +50,13 @@ void uart_init(uint32_t MY_UART_CLKSRC)
     UART_ITConfig(MDR_UART0, UART_IT_RX, ENABLE);                               //Включить прерывание по приему
     NVIC_EnableIRQ(UART0_IRQn);                                                 //Включить общее прерывание по UART 0
 }
-
-void uart_send_confirmation_command(const char command)                               // Функция подтверждения принятия команды
+/**
+  * @brief  Transmits confirmation command to the server through the UART0 
+  * peripheral.  
+  * @param  command: one of the several allowed confirmation commands to transmit.
+  * @retval None
+  */
+void uart_send_confirmation_command(const char command)                         // Функция подтверждения принятия команды
 {
     uint16_t Data = 0;
     switch(command)
@@ -80,13 +93,22 @@ void uart_send_confirmation_command(const char command)                         
             case ('G'):
                 Data =0x474F;
                 break;
+/*-------------------------------------------------МУИ-----------------------*/ 
+            case('A'):
+                Data =0x414F; 
+                break;
 /*----------------------------------------------------------------------------*/   
         } 
     uart_send_data(Data >> 8);
     uart_send_data(Data);
     uart_send_data(0x0A);
 }
-
+/**
+  * @brief  Transmits single data through the UART0 peripheral. PORTE pins 
+  * control RS-485 driver on the bord.
+  * @param  Data: the data to transmit.
+  * @retval None
+  */
 void uart_send_data(uint16_t Data)
 {
     PORT_SetBits(PORTE, PORT_Pin_23);                                           // Включаем передачу по UART на драйвер RS-485
@@ -100,6 +122,6 @@ void uart_send_data(uint16_t Data)
 
 
 
-/******************* (C) COPYRIGHT 2020 NIIKP *********************************
+/**************** (C) COPYRIGHT 2021 Zaznov NIIKP ******************************
 *
 * END OF FILE Uart.c */

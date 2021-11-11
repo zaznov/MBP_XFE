@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    Uart.h
   * @author  Zaznov NIIKP
-  * @version V3.0.0
-  * @date    01/05/2021
+  * @version V3.0.1
+  * @date    27/08/2021
   * @brief   This file contains all the functions prototypes for work with UART 
              from XFE project
   ******************************************************************************
@@ -34,6 +34,6 @@ void uart_send_confirmation_command(const char command);
 
 #endif /* __XFE_UART_H */
 
-/******************* (C) COPYRIGHT 2020 NIIKP *********************************
+/**************** (C) COPYRIGHT 2021 Zaznov NIIKP ******************************
 *
 * END OF FILE Uart.h */
